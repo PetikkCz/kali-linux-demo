@@ -34,9 +34,9 @@
             border: 1px solid #1e2d3d;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            height: 100%;
             display: flex;
             flex-direction: column;
+            min-height: 280px;
         }
         .terminal-header {
             background: #0d1a26;
@@ -53,6 +53,7 @@
             flex-grow: 1;
             font-size: 14px;
             line-height: 1.6;
+            max-height: 350px;
         }
         
         /* Animace kurzoru */
@@ -166,14 +167,6 @@
                         <!-- Zde se vygenerují odrážky přes JS -->
                     </ul>
 
-                    <!-- Rozbor příkazu -->
-                    <div id="cmd-breakdown-box" class="bg-gray-800/60 border border-gray-700/60 rounded-lg p-4 mb-6">
-                        <div class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">💡 Rozbor příkazu:</div>
-                        <ul id="step-cmd-list" class="space-y-1.5 text-sm text-gray-300 font-mono">
-                            <!-- Zde se vygeneruje vysvětlení částí příkazu -->
-                        </ul>
-                    </div>
-
                     <!-- Analytický / Kontextový box -->
                     <div class="bg-blue-900/20 border border-blue-500/20 rounded-lg p-5 mb-6 shadow-inner">
                         <p id="step-box-text" class="text-[15px] text-blue-100 font-medium leading-relaxed">
@@ -197,9 +190,10 @@
             </div>
         </div>
 
-        <!-- Pravý panel: Terminál -->
-        <div class="w-full md:w-7/12 h-full py-2">
-            <div class="terminal-window">
+        <!-- Pravý panel: Terminál a Rozbor příkazu -->
+        <div class="w-full md:w-7/12 h-full py-2 flex flex-col gap-4 overflow-y-auto pr-2">
+            <!-- Okno terminálu -->
+            <div class="terminal-window shrink-0">
                 <div class="terminal-header">
                     <div class="w-3 h-3 rounded-full bg-red-500"></div>
                     <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
@@ -213,6 +207,14 @@
                         <span id="term-typing"></span><span class="cursor"></span>
                     </div>
                 </div>
+            </div>
+
+            <!-- Rozbor příkazu (přesunut sem na pravou stranu) -->
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-xl shrink-0">
+                <div class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">💡 Rozbor příkazu:</div>
+                <ul id="step-cmd-list" class="space-y-1.5 text-sm text-gray-300 font-mono">
+                    <!-- Zde se vygeneruje vysvětlení částí příkazu -->
+                </ul>
             </div>
         </div>
 
@@ -243,7 +245,7 @@
                             "<b>cat shadow.txt:</b> Vypíše obsah vytvořeného souboru na obrazovku."
                         ],
                         preBox: "Nástroj OpenSSL aplikuje algoritmus SHA-512 společně s kryptografickou solí k vytvoření otisku hesla. Tímto se simuluje fáze, kdy útočník exfiltroval systémový soubor a přesouvá se k offline analýze dat.",
-                        cmd: 'echo "reditel:$(openssl passwd -6 -salt sul tajneheslog)" > shadow.txt\ncat shadow.txt',
+                        cmd: 'echo "reditel:$(openssl passwd -6 -salt sul tajneheslo)" > shadow.txt\ncat shadow.txt',
                         output: '<span class="text-white">reditel:</span><span class="text-gray-400">$6$sul$AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdefghijklmnopqrstuvwxyz0123456789AB</span>\n',
                         delay: 800,
                         postDesc: [
@@ -452,7 +454,7 @@
             const ulElement = document.getElementById('step-desc');
             ulElement.innerHTML = descArray.map(item => `<li>${item}</li>`).join('');
 
-            // Vykreslení rozboru příkazu
+            // Vykreslení rozboru příkazu na pravé straně
             const cmdList = document.getElementById('step-cmd-list');
             cmdList.innerHTML = cmdBreakdownArray.map(item => `<li>• ${item}</li>`).join('');
             

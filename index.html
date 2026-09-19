@@ -67,6 +67,15 @@
         }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
+        /* Animace pro změnu textu */
+        .fade-update {
+            animation: textUpdateFade 0.6s ease-in-out forwards;
+        }
+        @keyframes textUpdateFade {
+            0% { opacity: 0; transform: translateY(5px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0a0f14; }
@@ -82,8 +91,8 @@
             <div class="flex items-center gap-3">
                 <span class="text-2xl">🐉</span>
                 <div>
-                    <h1 class="font-bold text-white tracking-wide">KALI LINUX <span class="text-sky-400 font-normal">| Simulátor</span></h1>
-                    <div class="text-xs text-gray-500">Školní projekt - Operační systémy</div>
+                    <h1 class="font-bold text-white tracking-wide">KALI LINUX <span class="text-sky-400 font-normal">| Simulátor Hrozeb</span></h1>
+                    <div class="text-xs text-gray-500">Operační systémy – Praktická ukázka</div>
                 </div>
             </div>
             <button id="btn-back" onclick="goHome()" class="hidden px-4 py-2 text-sm font-semibold text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition">
@@ -95,37 +104,37 @@
     <!-- HLAVNÍ MENU (Výběr útoků) -->
     <main id="view-home" class="flex-grow max-w-7xl mx-auto w-full p-6 py-12">
         <div class="text-center mb-16">
-            <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">Interaktivní ukázky hrozeb</h2>
-            <p class="text-gray-400 max-w-2xl mx-auto">Zvolte scénář. Každá ukázka obsahuje teoretický úvod a automatizovanou simulaci chování systému a útočníka v terminálu.</p>
+            <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">Interaktivní simulátor hrozeb</h2>
+            <p class="text-gray-400 max-w-2xl mx-auto">Vyberte si scénář. Simulace vás provede teorií i reálným provedením v terminálu, včetně vysvětlení jednotlivých výsledků z pohledu bezpečnosti operačního systému.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- Útok 1 -->
-            <div class="glass-card rounded-2xl p-8 cursor-pointer flex flex-col" onclick="startScenario('hash')">
-                <div class="w-12 h-12 bg-sky-900/50 text-sky-400 rounded-xl flex items-center justify-center text-2xl mb-6 border border-sky-500/30">🔑</div>
+            <div class="glass-card rounded-2xl p-8 cursor-pointer flex flex-col group" onclick="startScenario('hash')">
+                <div class="w-14 h-14 bg-sky-900/40 text-sky-400 rounded-xl flex items-center justify-center text-3xl mb-6 border border-sky-500/30 group-hover:scale-110 transition">🔑</div>
                 <h3 class="text-xl font-bold text-white mb-3">1. Prolomení hesla</h3>
-                <p class="text-gray-400 text-sm mb-8 flex-grow">Ukázka toho, jak OS chrání hesla (hashování) a jak tuto obranu překoná offline slovníkový útok přes John the Ripper.</p>
-                <button class="w-full py-3 bg-sky-500 hover:bg-sky-400 text-black font-bold rounded-lg transition shadow-[0_0_15px_rgba(56,189,248,0.3)]">
+                <p class="text-gray-400 text-sm mb-8 flex-grow">Kompromitace ochrany souborového systému. Ukázka fungování hashovacích algoritmů a offline slovníkového útoku přes John the Ripper.</p>
+                <button class="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-lg transition">
                     Začít simulaci →
                 </button>
             </div>
 
             <!-- Útok 2 -->
-            <div class="glass-card rounded-2xl p-8 cursor-pointer flex flex-col" onclick="startScenario('shell')">
-                <div class="w-12 h-12 bg-yellow-900/50 text-yellow-400 rounded-xl flex items-center justify-center text-2xl mb-6 border border-yellow-500/30">🔌</div>
+            <div class="glass-card rounded-2xl p-8 cursor-pointer flex flex-col group" onclick="startScenario('shell')">
+                <div class="w-14 h-14 bg-yellow-900/40 text-yellow-400 rounded-xl flex items-center justify-center text-3xl mb-6 border border-yellow-500/30 group-hover:scale-110 transition">🔌</div>
                 <h3 class="text-xl font-bold text-white mb-3">2. Reverse Shell</h3>
-                <p class="text-gray-400 text-sm mb-8 flex-grow">Jak útočník obejde Firewall operačního systému tím, že donutí oběť navázat spojení směrem ven k útočníkovi (Netcat).</p>
-                <button class="w-full py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg transition shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+                <p class="text-gray-400 text-sm mb-8 flex-grow">Obejití síťové bezpečnosti. Jak útočník překoná restriktivní Firewall tím, že donutí OS oběti navázat aktivní spojení směrem ven.</p>
+                <button class="w-full py-3 bg-yellow-600 hover:bg-yellow-500 text-white font-bold rounded-lg transition">
                     Začít simulaci →
                 </button>
             </div>
 
             <!-- Útok 3 -->
-            <div class="glass-card rounded-2xl p-8 cursor-pointer flex flex-col" onclick="startScenario('phishing')">
-                <div class="w-12 h-12 bg-red-900/50 text-red-400 rounded-xl flex items-center justify-center text-2xl mb-6 border border-red-500/30">🎣</div>
+            <div class="glass-card rounded-2xl p-8 cursor-pointer flex flex-col group" onclick="startScenario('phishing')">
+                <div class="w-14 h-14 bg-red-900/40 text-red-400 rounded-xl flex items-center justify-center text-3xl mb-6 border border-red-500/30 group-hover:scale-110 transition">🎣</div>
                 <h3 class="text-xl font-bold text-white mb-3">3. Phishing (SET)</h3>
-                <p class="text-gray-400 text-sm mb-8 flex-grow">Když nejde prolomit OS, útočí se na uživatele. Klonování přihlašovací stránky pomocí nástroje Social-Engineer Toolkit.</p>
-                <button class="w-full py-3 bg-red-500 hover:bg-red-400 text-white font-bold rounded-lg transition shadow-[0_0_15px_rgba(248,113,113,0.3)]">
+                <p class="text-gray-400 text-sm mb-8 flex-grow">Zneužití lidského faktoru. Technika Social Engineering Toolkitu, která překonává i ty nejlepší technické ochrany systému klamem uživatele.</p>
+                <button class="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition">
                     Začít simulaci →
                 </button>
             </div>
@@ -138,34 +147,37 @@
         <!-- Levý panel: Informace a ovládání -->
         <div class="w-full md:w-5/12 flex flex-col h-full">
             <div class="mb-4">
-                <div id="sim-badge" class="inline-block px-3 py-1 text-xs font-bold rounded-md bg-sky-900/50 text-sky-400 border border-sky-500/30 mb-3">ÚTOK 1</div>
-                <h2 id="sim-title" class="text-3xl font-bold text-white mb-2">Název scénáře</h2>
+                <div id="sim-badge" class="inline-block px-3 py-1 text-xs font-bold rounded-md mb-2">ÚTOK</div>
+                <h2 id="sim-title" class="text-3xl font-bold text-white">Název scénáře</h2>
             </div>
 
             <!-- Karta aktuálního kroku -->
-            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 flex-grow flex flex-col">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 flex-grow flex flex-col shadow-xl">
                 <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
                     <h3 id="step-title" class="text-xl font-bold text-white">Krok 1: Příprava</h3>
-                    <span id="step-counter" class="text-sm font-mono text-gray-500">1 / 3</span>
+                    <span id="step-counter" class="text-sm font-mono text-gray-500 bg-gray-800 px-3 py-1 rounded-full">1 / 3</span>
                 </div>
                 
-                <p id="step-desc" class="text-gray-300 text-sm leading-relaxed mb-6 flex-grow">
-                    Zde bude popsáno, co se právě děje...
-                </p>
-
-                <!-- Tahák pro prezentujícího -->
-                <div class="bg-blue-900/20 border border-blue-500/20 rounded-lg p-4 mb-6">
-                    <div class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                        <span>🎙️</span> Co říct spolužákům:
-                    </div>
-                    <p id="step-speaker" class="text-sm text-blue-200 italic">
-                        Tady bude tvůj text k odprezentování...
+                <!-- Obal pro dynamický text -->
+                <div id="dynamic-content-wrapper" class="flex-grow flex flex-col">
+                    <p id="step-desc" class="text-gray-300 text-[15px] leading-relaxed mb-6">
+                        Zde bude popsáno, co se právě děje...
                     </p>
+
+                    <!-- Tahák pro prezentujícího -->
+                    <div id="speaker-box" class="bg-blue-900/20 border border-blue-500/20 rounded-lg p-5 mb-6 shadow-inner">
+                        <div class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <span>🎙️</span> Co říct spolužákům:
+                        </div>
+                        <p id="step-speaker" class="text-sm text-blue-200 italic leading-relaxed">
+                            Tady bude tvůj text k odprezentování...
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Ovládací tlačítka -->
-                <div class="mt-auto">
-                    <button id="btn-run" onclick="runCurrentStep()" class="w-full py-4 bg-sky-500 hover:bg-sky-400 text-black font-bold rounded-lg transition text-lg flex justify-center items-center gap-2">
+                <div class="mt-auto shrink-0 pt-2 border-t border-gray-800/50">
+                    <button id="btn-run" onclick="runCurrentStep()" class="w-full py-4 text-white font-bold rounded-lg transition text-lg flex justify-center items-center gap-2">
                         ▶ Spustit simulaci příkazu
                     </button>
                     <button id="btn-next" onclick="nextStep()" class="hidden w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg transition text-lg flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(74,222,128,0.2)]">
@@ -188,7 +200,6 @@
                     <span class="ml-3 text-xs text-gray-500 font-mono">kali@demo: ~</span>
                 </div>
                 <div class="terminal-body font-mono text-gray-300" id="terminal-content">
-                    <!-- Zde se bude generovat text terminálu -->
                     <div id="term-lines"></div>
                     <div id="term-active-line" class="hidden">
                         <span class="text-green-400">kali@demo</span><span class="text-white">:</span><span class="text-sky-400">~</span><span class="text-white">$</span> 
@@ -202,74 +213,86 @@
 
     <!-- Skripty (Logika simulátoru) -->
     <script>
-        // Databáze scénářů
+        // Databáze scénářů (Kompletní obsahy pro PRE a POST stav)
         const scenarios = {
             'hash': {
-                badge: 'ÚTOK 1 / OS',
+                badge: 'ÚTOK 1 / OCHRANA SOUBOROVÉHO SYSTÉMU',
                 color: 'sky',
-                title: 'Prolomení hesla (John the Ripper)',
+                title: 'Prolomení systémového hesla',
                 steps: [
                     {
                         title: 'Krok 1: Extrakce hashe z OS',
-                        desc: 'Operační systémy neukládají hesla v textu, ale jako hash (nevratnou matematickou funkci). Prvním krokem útočníka je zisk tohoto hashe. My si ho teď nasimulujeme vygenerováním slabého hesla "tajneheslo".',
-                        speaker: 'Kdyby Linux ukládal hesla normálně a někdo se do něj naboural, měl by hned všechna hesla. Místo toho z nich dělá hash. My si teď nasimulujeme situaci, kdy útočník takový zahashovaný soubor z Linuxu ukradl.',
+                        preDesc: 'Operační systémy (Linux i Windows) z bezpečnostních důvodů nikdy neukládají hesla v čitelném textu. Využívají kryptografické hashovací funkce (např. SHA-512), které z hesla vytvoří zdánlivě náhodnou a matematicky nevratnou změť znaků. V reálném útoku by hacker tento záznam ze systému (ze souboru /etc/shadow) odcizil. My si jej nyní pro účely dema vygenerujeme ručně na základě slabého hesla "tajneheslo".',
+                        preSpeaker: 'Představte si, že se útočník dostal k databázi hesel. Kdyby tam byla hesla v textu, má vyhráno. Linux je ale chrání pomocí hashování. Já si teď přesně takový ukradený záznam uměle vytvořím – nechám systém vygenerovat SHA-512 hash ze slova "tajneheslo" s využitím kryptografické "soli".',
                         cmd: 'echo "reditel:$(openssl passwd -6 -salt sul tajneheslo)" > shadow.txt\ncat shadow.txt',
                         output: '<span class="text-white">reditel:</span><span class="text-gray-400">$6$sul$AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdefghijklmnopqrstuvwxyz0123456789AB</span>\n',
-                        delay: 800
+                        delay: 800,
+                        postDesc: 'Příkaz openssl aplikoval vysoce bezpečný algoritmus SHA-512. Výsledný řetězec začínající formátem $6$ je to jediné, co útočník získal. Kvůli jednosměrnosti funkce z tohoto řetězce nelze původní heslo nijak exaktně vypočítat. Útočník má tak v rukou jen tento zašifrovaný textový soubor a jedinou cestou k úspěchu je pokusit se jej "uhodnout".',
+                        postSpeaker: 'Podívejte se na výsledek v terminálu. Vidíme uživatele "reditel" a za ním obrovskou změť znaků. I když my víme, že heslo zní "tajneheslo", systém to z tohoto hashe zpětně nedokáže spočítat. Útočník si teď tento soubor stáhl k sobě domů na svůj Kali Linux.'
                     },
                     {
-                        title: 'Krok 2: Slovníkový útok',
-                        desc: 'Nyní spustíme nástroj John the Ripper. Ten nebude zkoušet všechny kombinace písmen, ale využije obří slovník nejčastějších hesel. Bude je bleskově hashovat a porovnávat s naším ukradeným hashem.',
-                        speaker: 'Teď spustím John the Ripper. Ten neútočí přes internet – běží offline tady v mém počítači. Zkouší slova ze slovníku a protože oběť použila hloupé heslo "tajneheslo", systém ho rozlouskne prakticky okamžitě.',
+                        title: 'Krok 2: Slovníkový útok (John the Ripper)',
+                        preDesc: 'Na řadu přichází ofenzivní nástroj John the Ripper. Místo neefektivního zkoušení všech možných kombinací znaků (Brute-force) provede lokální slovníkový útok (Dictionary attack). Bude bleskově číst miliony známých hesel ze slavného souboru rockyou.txt, hashoat je a výsledek porovnávat s naším ukradeným hashem.',
+                        preSpeaker: 'Teď nasadíme těžkou váhu – Johna the Rippera. Všimněte si, že útočník už vůbec nekomunikuje se serverem, útok probíhá lokálně, offline. Program vezme obří slovník nejčastějších hesel, zahashuje je a začne je porovnávat s naším cílem.',
                         cmd: 'john --wordlist=/usr/share/wordlists/rockyou.txt shadow.txt',
                         output: 'Using default input encoding: UTF-8\nLoaded 1 password hash (sha512crypt, crypt(3) $6$ [SHA512 256/256 AVX2 4x])\nPress \'q\' or Ctrl-C to abort, almost any other key for status\n<span class="text-yellow-400">... prolamuji (simulace) ...</span>\n<span class="text-green-400 font-bold">tajneheslo</span>       (reditel)\n1g 0:00:00:01 DONE (2026-09-19 17:33) 1.000g/s 3450p/s 3450c/s 3450C/s\nUse the "--show" option to display all of the cracked passwords reliably',
-                        delay: 2000
+                        delay: 1800,
+                        postDesc: 'Útok proběhl úspěšně a prakticky okamžitě. Protože uživatel "reditel" nedodržel bezpečnostní politiku OS a zvolil slabé heslo přítomné v běžném slovníku, sebelepší hashovací algoritmus ho nezachránil. Moderní grafické karty zvládnou provést miliony takových pokusů za sekundu.',
+                        postSpeaker: 'A máme to. Vidíte zeleně svítící "tajneheslo"? Protože bylo heslo slabé a nacházelo se v běžném slovníku, John ho našel okamžitě. Tímto nenápadným offline útokem dokázal hacker překonat hlavní obranný mechanismus operačního systému, aniž by s ním musel přímo bojovat.'
                     }
                 ]
             },
             'shell': {
-                badge: 'ÚTOK 2 / SÍŤ',
+                badge: 'ÚTOK 2 / SÍŤOVÁ BEZPEČNOST',
                 color: 'yellow',
                 title: 'Obejití Firewallu (Reverse Shell)',
                 steps: [
                     {
-                        title: 'Krok 1: Útočník naslouchá',
-                        desc: 'Útočník narazil na Firewall, který blokuje příchozí spojení. Zvolí tedy Reverse Shell. Ve svém Kali Linuxu si spustí nástroj Netcat, který bude čekat na to, až se oběť ozve jemu.',
-                        speaker: 'Představte si Firewall jako strážného, který nikoho cizího nepustí dovnitř. Útočník se tam tedy nedobývá. Místo toho si u sebe spustí program a čeká, až se oběť ozve jemu zevnitř.',
+                        title: 'Krok 1: Naslouchání na straně útočníka',
+                        preDesc: 'Standardní síťový útok (Bind Shell) spolehlivě zablokuje Firewall operačního systému, protože odmítá neznámá příchozí spojení z internetu. Útočník proto volí koncepci "Reverse Shell". Přímo ve svém stroji spustí na určeném portu nástroj Netcat, který se přepne do pasivního režimu a bude čekat, až se mu operační systém oběti ohlásí sám.',
+                        preSpeaker: 'Firewall ve Windows funguje jako přísný strážný u vchodu do firmy – zvenčí nikoho nepustí. Proto se o to vůbec nebudeme snažit. V roli útočníka si u sebe pouze otevřu port 4444, zapnu naslouchání a budu čekat, až mi "zavolá" sama oběť zevnitř.',
                         cmd: 'nc -lvnp 4444',
-                        output: 'listening on [any] 4444 ...\n<span class="text-gray-500">⏳ Čekání na připojení oběti...</span>',
-                        delay: 1000
+                        output: 'listening on [any] 4444 ...\n<span class="text-gray-500">⏳ Čekání na příchozí spojení od oběti...</span>',
+                        delay: 1000,
+                        postDesc: 'Nástroj Netcat úspěšně otevřel port a přešel do tichého naslouchacího režimu (listening). Technická příprava útočníka tímto končí. Nyní musí dojít k interakci uvnitř chráněné sítě oběti – typicky spuštěním škodlivého kódu z e-mailu.',
+                        postSpeaker: 'Terminál se "zasekl". Program Netcat naslouchá a čeká. Naše past je připravená. Z technického hlediska teď nemůžeme dělat nic jiného, než čekat, až uživatel uvnitř chráněné sítě udělá osudovou chybu a nevědomky spustí náš kód.'
                     },
                     {
-                        title: 'Krok 2: Oběť spouští kód',
-                        desc: 'Oběť otevírá na svém PC infikovaný soubor (simulováno). Z jejího počítače se aktivně odešle systémový terminál směrem ven k útočníkovi. Firewall to povolí, protože to vypadá jako běžný odchozí webový provoz.',
-                        speaker: 'Oběť právě klikla na infikovanou přílohu. Systém nevydal žádný zvuk, ale na pozadí zavolal ven k nám. Firewall odchozí spojení nezablokoval. Vidíte ten výpis? Útočník právě dostal plný přístup do jejího počítače.',
-                        cmd: '/* Oběť spustila payload... Přijímám spojení */',
-                        output: 'connect to [127.0.0.1] from (UNKNOWN) [127.0.0.1] 58292\n<span class="text-green-400">C:\\Windows\\System32></span> whoami\ndesktop-obet\\uzivatel\n<span class="text-green-400">C:\\Windows\\System32></span> echo "Mám kontrolu nad systémem!"\n"Mám kontrolu nad systémem!"',
-                        delay: 2500
+                        title: 'Krok 2: Spuštění payloadu obětí',
+                        preDesc: 'Tento krok simuluje situaci, kdy uživatel obdrží podvodný e-mail a spustí přílohu. Skrytý skript bez jakéhokoliv chybového hlášení tiše přesměruje systémový proces terminálu na IP adresu útočníka. Restriktivní Firewall toto spojení bez varování propustí, neboť jej vyhodnotí jako naprosto běžný odchozí provoz na internet.',
+                        preSpeaker: 'Teď si představme, že oběť právě otevřela náš "falešný fakturový dokument". V OS nevyskočí žádný error ani okno. Pod povrchem ale její systémový terminál právě aktivně navazuje spojení s naším čekajícím Netcatem. Podívejme se, co nám to vypíše.',
+                        cmd: '/* Simulace: Oběť spustila payload. Přijímám paket... */',
+                        output: 'connect to [127.0.0.1] from (UNKNOWN) [127.0.0.1] 58292\n<span class="text-green-400">C:\\Windows\\System32></span> whoami\ndesktop-obet\\uzivatel\n<span class="text-green-400">C:\\Windows\\System32></span> echo "Mám plnou kontrolu!"\n"Mám plnou kontrolu!"',
+                        delay: 2000,
+                        postDesc: 'Firewall byl úspěšně obejit bez prolomení jediného systémového hesla. Útočník navázal Reverse spojení a v jeho terminálu se otevřela příkazová řádka (cmd/powershell) napadeného operačního systému. Nyní může tiše procházet disky a krást data s oprávněním napadeného uživatele.',
+                        postSpeaker: 'Bingo. Vidíte ten výpis ze systému Windows v našem Linuxovém terminálu? Přesně tady u sebe mám plný přístup do cizího počítače. Firewall nezareagoval, protože spojení iniciovala samotná oběť zevnitř ven. Tímto jsme ukázali, že samotný Firewall k ochraně zkrátka nestačí.'
                     }
                 ]
             },
             'phishing': {
-                badge: 'ÚTOK 3 / UŽIVATEL',
+                badge: 'ÚTOK 3 / ZNEUŽITÍ UŽIVATELE',
                 color: 'red',
-                title: 'Phishing a klonování webu (SET)',
+                title: 'Phishing (Social-Engineer Toolkit)',
                 steps: [
                     {
-                        title: 'Krok 1: Klonování stránky',
-                        desc: 'Nejslabším článkem není OS, ale člověk. Pomocí Social-Engineer Toolkitu (SET) útočník naklonuje libovolnou přihlašovací stránku. Získá tak identickou kopii webu, která běží na jeho serveru.',
-                        speaker: 'Když je systém Windows plně zaktualizovaný, útočník na něj neútočí technicky. Zaútočí na uživatele. Teď v terminálu spustím automatický klonovač a vytvořím přesnou kopii školního portálu.',
+                        title: 'Krok 1: Klonování legitimní stránky',
+                        preDesc: 'Pokud je infrastruktura perfektně zabezpečená, hackeři neútočí na hardware, ale na člověka (Social Engineering). Kali Linux obsahuje automatizovaný nástroj SET, který dokáže během několika sekund stáhnout, zanalyzovat a 1:1 zkopírovat jakýkoliv přihlašovací portál a spustit jej na vlastním skrytém serveru.',
+                        preSpeaker: 'Pokud má firma aktualizovaný OS a silná hesla, nebudeme se se strojem vůbec prát. Zaútočíme přímo na mozek člověka. Pomocí nástroje SET teď naklonuji školní přihlašovací portál a vytvořím tak pro oběť dokonalou past.',
                         cmd: 'setoolkit\n> 1 (Social-Engineering Attacks)\n> 2 (Website Attack Vectors)\n> 3 (Credential Harvester)\n> 2 (Site Cloner)\n> URL: http://skolni-portal.cz/login',
-                        output: '[*] Cloning the website: http://skolni-portal.cz/login\n[*] This could take a little bit...\n<span class="text-green-400">[+] The best way to use this attack is if username and password form fields are available.</span>\n[*] Information will be displayed to you as it arrives below:\n',
-                        delay: 2000
+                        output: '[*] Cloning the website: http://skolni-portal.cz/login\n[*] This could take a little bit...\n<span class="text-green-400">[+] The best way to use this attack is if username and password form fields are available.</span>\n[*] Information will be displayed to you as it arrives below:\n<span class="text-gray-500">⏳ Čekání na oběť...</span>',
+                        delay: 2200,
+                        postDesc: 'Identická kopie webu úspěšně běží a naslouchá na serveru útočníka. Proces "Credential Harvester" nyní potichu zachytává všechny odesílané HTTP POST požadavky (vyplněné formuláře). Útočníkovi teď stačí pouze rozšířit infikovaný odkaz, například skrze cílený Spear-Phishingový e-mail.',
+                        postSpeaker: 'Náš dokonalý klon už běží. Nástroj zachytává všechno, co do něj kdokoliv napíše. Teď už jen stačí poslat oběti e-mail, který říká třeba: "Platnost vašeho hesla končí, klikněte zde pro okamžitou změnu". A trpělivě čekat u terminálu.'
                     },
                     {
-                        title: 'Krok 2: Zachycení údajů',
-                        desc: 'Útočník pošle oběti odkaz (např. v podvodném e-mailu). Oběť vidí známý web a zadá své údaje. Žádný antivir v OS nezareaguje, protože oběť údaje odevzdává naprosto dobrovolně v běžném prohlížeči.',
-                        speaker: 'Oběť klikla na odkaz, vidí před sebou známý web a zadává heslo. Operační systém nemůže uživatele chránit před jeho vlastní chybou. Podívejte se do našeho terminálu – údaje se nám právě objevily v čistém textu.',
-                        cmd: '/* Čekání na aktivitu oběti na falešném webu... */',
+                        title: 'Krok 2: Zachycení nešifrovaných údajů',
+                        preDesc: 'Oběť na podvržený odkaz klikla, vidí vizuálně známé firemní prostředí a ve vší důvěře odesílá své jméno a heslo. Bezpečnostní procesy operačního systému v tuto chvíli nereagují – z technického hlediska uživatel naprosto legitimně surfuje po webu a dobrovolně vkládá data.',
+                        preSpeaker: 'Oběť otevřela náš odkaz. Nic netuší a přihlašuje se. Windows mlčí, antivir nevydal jedinou hlásku – proč by také ano, uživatel prostě jen otevřel webovou stránku. Sledujte prosím pozorně, co se stane v našem terminálu.',
+                        cmd: '/* Simulace: Oběť zadala údaje a potvrdila přihlášení... */',
                         output: '<span class="text-yellow-400">[*] WE GOT A HIT! Printing the output:</span>\n<span class="text-red-400">POSSIBLE USERNAME FIELD FOUND:</span> novak_jan\n<span class="text-red-400">POSSIBLE PASSWORD FIELD FOUND:</span> Skola2026!\n[*] Victim IP: 192.168.1.104',
-                        delay: 1500
+                        delay: 1500,
+                        postDesc: 'V okamžiku stisknutí tlačítka "Přihlásit" byly údaje přesměrovány k útočníkovi a vypsány v jasném (nezašifrovaném) textu. Aby SET zabránil podezření, obratem oběť přesměroval na pravou stránku. Útok odhalil základní bezpečnostní pravidlo: I ten nejdokonalejší OS je k ničemu, pokud selže úsudek koncového uživatele.',
+                        postSpeaker: 'A máme je. Vidíte červeně zachycené uživatelské jméno a heslo v čistém textu? Systém jsme nemuseli hackovat, prostě jsme ho obešli. Proti takovému podvrhu samotný OS uživatele neochrání – jedinou spolehlivou systémovou překážkou by zde bylo použití dvoufaktorového ověřování (2FA).'
                     }
                 ]
             }
@@ -287,6 +310,7 @@
         const termLines = document.getElementById('term-lines');
         const termActiveLine = document.getElementById('term-active-line');
         const termTyping = document.getElementById('term-typing');
+        const dynamicContentWrapper = document.getElementById('dynamic-content-wrapper');
         
         // Funkce: Zpět na výběr
         function goHome() {
@@ -301,8 +325,9 @@
             currentStepIndex = 0;
             
             // Nastavení hlavičky
-            document.getElementById('sim-badge').textContent = currentAppScenario.badge;
-            document.getElementById('sim-badge').className = `inline-block px-3 py-1 text-xs font-bold rounded-md bg-${currentAppScenario.color}-900/50 text-${currentAppScenario.color}-400 border border-${currentAppScenario.color}-500/30 mb-3`;
+            const badge = document.getElementById('sim-badge');
+            badge.textContent = currentAppScenario.badge;
+            badge.className = `inline-block px-3 py-1 text-xs font-bold rounded-md bg-${currentAppScenario.color}-900/40 text-${currentAppScenario.color}-400 border border-${currentAppScenario.color}-500/30 mb-2`;
             document.getElementById('sim-title').textContent = currentAppScenario.title;
             
             // Vymazání terminálu
@@ -315,26 +340,52 @@
 
             // Barva hlavního tlačítka
             const btnRun = document.getElementById('btn-run');
-            btnRun.className = `w-full py-4 bg-${currentAppScenario.color}-500 hover:bg-${currentAppScenario.color}-400 text-black font-bold rounded-lg transition text-lg flex justify-center items-center gap-2`;
+            btnRun.className = `w-full py-4 bg-${currentAppScenario.color}-600 hover:bg-${currentAppScenario.color}-500 text-white font-bold rounded-lg transition text-lg flex justify-center items-center gap-2`;
 
-            loadStep();
+            loadStepState('pre'); // Načte výchozí PŘED texty
         }
 
-        // Funkce: Načtení dat aktuálního kroku do UI
-        function loadStep() {
+        // Funkce: Aplikuje textovou sadu s animací
+        function applyDynamicText(descText, speakerText) {
+            // Odebrání třídy pro restart animace
+            dynamicContentWrapper.classList.remove('fade-update');
+            
+            // Hack pro vynucení reflow (aby animace jela znovu)
+            void dynamicContentWrapper.offsetWidth;
+            
+            // Změna obsahu
+            document.getElementById('step-desc').innerHTML = descText;
+            document.getElementById('step-speaker').innerHTML = speakerText;
+            
+            // Přidání animační třídy
+            dynamicContentWrapper.classList.add('fade-update');
+        }
+
+        // Funkce: Načtení dat aktuálního kroku do UI (State 'pre' nebo 'post')
+        function loadStepState(state) {
             const stepData = currentAppScenario.steps[currentStepIndex];
             
-            document.getElementById('step-counter').textContent = `${currentStepIndex + 1} / ${currentAppScenario.steps.length}`;
-            document.getElementById('step-title').textContent = stepData.title;
-            document.getElementById('step-desc').textContent = stepData.desc;
-            document.getElementById('step-speaker').textContent = stepData.speaker;
-            
-            document.getElementById('btn-run').classList.remove('hidden');
-            document.getElementById('btn-next').classList.add('hidden');
-            document.getElementById('btn-finish').classList.add('hidden');
-            
-            termActiveLine.classList.remove('hidden');
-            termTyping.textContent = '';
+            if (state === 'pre') {
+                document.getElementById('step-counter').textContent = `${currentStepIndex + 1} / ${currentAppScenario.steps.length}`;
+                document.getElementById('step-title').textContent = stepData.title;
+                
+                applyDynamicText(stepData.preDesc, stepData.preSpeaker);
+                
+                document.getElementById('btn-run').classList.remove('hidden');
+                document.getElementById('btn-next').classList.add('hidden');
+                document.getElementById('btn-finish').classList.add('hidden');
+                
+                termActiveLine.classList.remove('hidden');
+                termTyping.textContent = '';
+            } else if (state === 'post') {
+                applyDynamicText(stepData.postDesc, stepData.postSpeaker);
+                
+                if (currentStepIndex < currentAppScenario.steps.length - 1) {
+                    document.getElementById('btn-next').classList.remove('hidden');
+                } else {
+                    document.getElementById('btn-finish').classList.remove('hidden');
+                }
+            }
         }
 
         // Funkce: Spuštění simulace (Psaní kódu a výstup)
@@ -347,17 +398,14 @@
             
             // Animace psaní příkazu
             const commands = stepData.cmd.split('\n');
-            
             for (let i = 0; i < commands.length; i++) {
                 termTyping.textContent = '';
-                await typeText(commands[i], 30); // rychlost psaní
+                await typeText(commands[i], 25); // rychlost psaní
                 
-                // Přidání dopsaného řádku do historie
                 const cmdLine = document.createElement('div');
                 cmdLine.innerHTML = `<span class="text-green-400">kali@demo</span><span class="text-white">:</span><span class="text-sky-400">~</span><span class="text-white">$</span> <span class="text-white">${commands[i]}</span>`;
                 termLines.appendChild(cmdLine);
             }
-            
             termActiveLine.classList.add('hidden');
 
             // Simulace prodlevy (zpracování)
@@ -366,23 +414,19 @@
             // Zobrazení výstupu
             if (stepData.output) {
                 const outputBlock = document.createElement('div');
-                outputBlock.className = "mb-4";
+                outputBlock.className = "mb-4 mt-1";
                 outputBlock.innerHTML = stepData.output.replace(/\n/g, '<br>');
                 termLines.appendChild(outputBlock);
             }
             
-            // Posun scrollbaru terminálu dolů
+            // Posun scrollbaru
             const terminalBody = document.querySelector('.terminal-body');
             terminalBody.scrollTop = terminalBody.scrollHeight;
 
             isSimulating = false;
-
-            // Zobrazení tlačítka pro další krok nebo dokončení
-            if (currentStepIndex < currentAppScenario.steps.length - 1) {
-                document.getElementById('btn-next').classList.remove('hidden');
-            } else {
-                document.getElementById('btn-finish').classList.remove('hidden');
-            }
+            
+            // NAČTENÍ NOVÉHO TEXTU PO SKONČENÍ SIMULACE
+            loadStepState('post');
         }
 
         // Pomocná funkce pro animaci psaní
@@ -405,7 +449,7 @@
         // Funkce: Další krok
         function nextStep() {
             currentStepIndex++;
-            loadStep();
+            loadStepState('pre');
         }
     </script>
 </body>

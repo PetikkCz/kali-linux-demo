@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kali Linux | Demonstrace prolomení hesla</title>
+    <!-- Tailwind CSS přes CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Ikony (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        kali: {
+                            dark: '#0a0f14',
+                            card: '#111822',
+                            primary: '#277ea5',
+                            accent: '#38bdf8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0a0f14;
+            color: #e2e8f0;
+        }
+
+        .glass-panel {
+            background: rgba(17, 24, 34, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(39, 126, 165, 0.2);
+        }
+
+        .terminal-header {
+            background: #1a202c;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .text-glow {
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="border-b border-kali-primary/30 bg-kali-card/80 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i class="ph ph-terminal-window text-3xl text-kali-accent"></i>
+                <h1 class="text-xl font-bold tracking-tight">Kali Demo <span class="text-kali-primary font-normal">| John the Ripper</span></h1>
+            </div>
+            <a href="https://www.kali.org/" target="_blank" class="text-sm text-gray-400 hover:text-kali-accent transition">Oficiální web</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="flex-grow max-w-5xl mx-auto px-6 py-12 w-full">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl md:text-5xl font-bold text-white mb-4 text-glow">Praktická ukázka: Offline útok na heslo</h2>
+            <p class="text-lg text-gray-400 max-w-2xl mx-auto">Tento interaktivní průvodce slouží jako podklad pro živou demonstraci v rámci předmětu Operační systémy. Všechny kroky probíhají lokálně bez rizika poškození systému.</p>
+        </div>
+
+        <div class="space-y-12">
+
+            <!-- Krok 1 -->
+            <section class="glass-panel rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-kali-accent"></div>
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="bg-kali-primary/20 text-kali-accent rounded-lg p-3">
+                        <i class="ph ph-hash text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Krok 1: Vygenerování "ukradeného" hesla</h3>
+                        <p class="text-gray-400 mt-1">Operační systémy neukládají hesla v čistém textu, ale jako tzv. hash. Tímto příkazem si takový hash uměle vytvoříme ze slova "tajneheslo".</p>
+                    </div>
+                </div>
+
+                <!-- Terminal block -->
+                <div class="bg-black rounded-xl overflow-hidden mb-6 border border-gray-800">
+                    <div class="terminal-header px-4 py-2 flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="ml-2 text-xs text-gray-500 font-mono">kali@demo: ~</span>
+                    </div>
+                    <div class="p-4 relative group">
+                        <pre><code class="font-mono text-sm text-gray-300"><span class="text-kali-accent">openssl</span> passwd -6 -salt sul tajneheslo</code></pre>
+                        <button onclick="copyCode(this)" class="absolute top-3 right-3 bg-gray-800 hover:bg-kali-primary text-white text-xs px-3 py-1 rounded transition opacity-0 group-hover:opacity-100">Kopírovat</button>
+                    </div>
+                </div>
+
+                <!-- Speaker Notes -->
+                <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 flex gap-3">
+                    <i class="ph ph-microphone-stage text-xl text-blue-400 mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-semibold text-blue-300 mb-1">Co říct spolužákům:</h4>
+                        <p class="text-sm text-gray-300 italic">"Linux neukládá hesla v čistém textu, ale dělá z nich takzvaný hash. Příkazem openssl jsem teď prohnal slovo tajneheslo algoritmem SHA-512 (to je ta -6) a přidal k němu sůl. Výsledek je změť znaků, ze kterých už původní heslo nejde matematicky vrátit zpět."</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Krok 2 -->
+            <section class="glass-panel rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-kali-accent"></div>
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="bg-kali-primary/20 text-kali-accent rounded-lg p-3">
+                        <i class="ph ph-file-text text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Krok 2: Vytvoření souboru pro útočníka</h3>
+                        <p class="text-gray-400 mt-1">Hash uložíme do textového souboru společně s fiktivním uživatelským jménem, abychom nasimulovali data ukradená ze serveru.</p>
+                    </div>
+                </div>
+
+                <div class="bg-black rounded-xl overflow-hidden mb-6 border border-gray-800">
+                    <div class="terminal-header px-4 py-2 flex items-center gap-2">
+                        <div class="flex gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div></div>
+                        <span class="ml-2 text-xs text-gray-500 font-mono">kali@demo: ~</span>
+                    </div>
+                    <div class="p-4 relative group mb-1 border-b border-gray-800">
+                        <pre><code class="font-mono text-sm text-gray-300"><span class="text-kali-accent">echo</span> "reditel:$(openssl passwd -6 -salt sul tajneheslo)" > k_prolomeni.txt</code></pre>
+                        <button onclick="copyCode(this)" class="absolute top-3 right-3 bg-gray-800 hover:bg-kali-primary text-white text-xs px-3 py-1 rounded transition opacity-0 group-hover:opacity-100">Kopírovat</button>
+                    </div>
+                    <div class="p-4 relative group">
+                        <pre><code class="font-mono text-sm text-gray-300"><span class="text-kali-accent">cat</span> k_prolomeni.txt</code></pre>
+                        <button onclick="copyCode(this)" class="absolute top-3 right-3 bg-gray-800 hover:bg-kali-primary text-white text-xs px-3 py-1 rounded transition opacity-0 group-hover:opacity-100">Kopírovat</button>
+                    </div>
+                </div>
+
+                <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 flex gap-3">
+                    <i class="ph ph-microphone-stage text-xl text-blue-400 mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-semibold text-blue-300 mb-1">Co říct spolužákům:</h4>
+                        <p class="text-sm text-gray-300 italic">"Tento soubor představuje databázi s uživatelským jménem a jeho zašifrovaným heslem. Přesně takhle to hacker vidí, když data ukradne. Nyní přichází na řadu Kali Linux a jeho nástroj John the Ripper."</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Krok 3 -->
+            <section class="glass-panel rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-kali-accent"></div>
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="bg-kali-primary/20 text-kali-accent rounded-lg p-3">
+                        <i class="ph ph-skull text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Krok 3: Samotný útok (Prolomení)</h3>
+                        <p class="text-gray-400 mt-1">Spustíme John the Ripper. Program sám identifikuje použitý algoritmus a zahájí prolamování lokální hrubou silou.</p>
+                    </div>
+                </div>
+
+                <div class="bg-black rounded-xl overflow-hidden mb-6 border border-gray-800">
+                    <div class="terminal-header px-4 py-2 flex items-center gap-2">
+                        <div class="flex gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div></div>
+                        <span class="ml-2 text-xs text-gray-500 font-mono">kali@demo: ~</span>
+                    </div>
+                    <div class="p-4 relative group">
+                        <pre><code class="font-mono text-sm text-gray-300"><span class="text-kali-accent">john</span> k_prolomeni.txt</code></pre>
+                        <button onclick="copyCode(this)" class="absolute top-3 right-3 bg-gray-800 hover:bg-kali-primary text-white text-xs px-3 py-1 rounded transition opacity-0 group-hover:opacity-100">Kopírovat</button>
+                    </div>
+                </div>
+
+                <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4 flex gap-3">
+                    <i class="ph ph-microphone-stage text-xl text-blue-400 mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-semibold text-blue-300 mb-1">Co říct spolužákům:</h4>
+                        <p class="text-sm text-gray-300 italic">"Teď jsem spustil nástroj John the Ripper. Ten do systému neposílá žádné viry, jen extrémní rychlostí zkouší různá slova, vyrábí z nich hashe a porovnává je s tím naším ukradeným. Protože je heslo slabé, prolomí ho prakticky hned."</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Krok 4 -->
+            <section class="glass-panel rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-kali-accent"></div>
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="bg-kali-primary/20 text-kali-accent rounded-lg p-3">
+                        <i class="ph ph-check-circle text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-white">Krok 4: Zobrazení výsledku</h3>
+                        <p class="text-gray-400 mt-1">Pokud nástroj dříve našel správné heslo, je uložené v jeho mezipaměti. Tímto příkazem jej znovu zobrazíme v čistém textu.</p>
+                    </div>
+                </div>
+
+                <div class="bg-black rounded-xl overflow-hidden border border-gray-800">
+                    <div class="terminal-header px-4 py-2 flex items-center gap-2">
+                        <div class="flex gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div></div>
+                        <span class="ml-2 text-xs text-gray-500 font-mono">kali@demo: ~</span>
+                    </div>
+                    <div class="p-4 relative group border-b border-gray-800">
+                        <pre><code class="font-mono text-sm text-gray-300"><span class="text-kali-accent">john</span> --show k_prolomeni.txt</code></pre>
+                        <button onclick="copyCode(this)" class="absolute top-3 right-3 bg-gray-800 hover:bg-kali-primary text-white text-xs px-3 py-1 rounded transition opacity-0 group-hover:opacity-100">Kopírovat</button>
+                    </div>
+                    <!-- Simulace výstupu -->
+                    <div class="p-4 bg-gray-900">
+                        <pre><code class="font-mono text-sm text-green-400">reditel:tajneheslo
+
+1 password hash cracked, 0 left</code></pre>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 border-t border-gray-800 bg-black/50">
+        <div class="max-w-5xl mx-auto px-6 py-6 text-center">
+            <p class="text-gray-500 text-sm">Vytvořeno pro prezentaci do předmětu Operační systémy.</p>
+        </div>
+    </footer>
+
+    <!-- JS pro kopírování do schránky -->
+    <script>
+        function copyCode(button) {
+            // Najde předchozí element <pre> a v něm <code> a zkopíruje jeho čistý text
+            const codeText = button.previousElementSibling.innerText;
+
+            navigator.clipboard.writeText(codeText).then(() => {
+                const originalText = button.innerText;
+                button.innerText = 'Zkopírováno!';
+                button.classList.add('bg-green-600');
+                button.classList.remove('bg-gray-800');
+
+                setTimeout(() => {
+                    button.innerText = originalText;
+                    button.classList.remove('bg-green-600');
+                    button.classList.add('bg-gray-800');
+                }, 2000);
+            }).catch(err => {
+                console.error('Nepodařilo se zkopírovat kód: ', err);
+            });
+        }
+    </script>
+</body>
+</html>

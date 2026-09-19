@@ -105,7 +105,7 @@
     <main id="view-home" class="flex-grow max-w-7xl mx-auto w-full p-6 py-12">
         <div class="text-center mb-16">
             <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">Interaktivní simulátor hrozeb</h2>
-            <p class="text-gray-400 max-w-2xl mx-auto">Vyberte si scénář. Simulace vás provede teorií i reálným provedením v terminálu, včetně vysvětlení jednotlivých výsledků z pohledu bezpečnosti operačního systému.</p>
+            <p class="text-gray-400 max-w-2xl mx-auto">Vyberte si scénář. Simulace vás provede teorií i reálným provedením v terminálu, včetně vysvětlení jednotlivých výsledků a rozboru příkazů.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -145,7 +145,7 @@
     <main id="view-simulator" class="hidden flex-grow max-w-7xl mx-auto w-full p-6 h-full flex flex-col md:flex-row gap-8 overflow-hidden">
         
         <!-- Levý panel: Informace a ovládání -->
-        <div class="w-full md:w-5/12 flex flex-col h-full">
+        <div class="w-full md:w-5/12 flex flex-col h-full overflow-y-auto pr-2">
             <div class="mb-4">
                 <div id="sim-badge" class="inline-block px-3 py-1 text-xs font-bold rounded-md mb-2">ÚTOK</div>
                 <h2 id="sim-title" class="text-3xl font-bold text-white">Název scénáře</h2>
@@ -162,11 +162,19 @@
                 <div id="dynamic-content-wrapper" class="flex-grow flex flex-col">
                     
                     <!-- Dynamické odrážky -->
-                    <ul id="step-desc" class="list-disc pl-6 space-y-3 text-lg text-gray-200 mb-8">
+                    <ul id="step-desc" class="list-disc pl-6 space-y-3 text-lg text-gray-200 mb-6">
                         <!-- Zde se vygenerují odrážky přes JS -->
                     </ul>
 
-                    <!-- Analytický / Kontextový box (bez hlavičky) -->
+                    <!-- Rozbor příkazu -->
+                    <div id="cmd-breakdown-box" class="bg-gray-800/60 border border-gray-700/60 rounded-lg p-4 mb-6">
+                        <div class="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">💡 Rozbor příkazu:</div>
+                        <ul id="step-cmd-list" class="space-y-1.5 text-sm text-gray-300 font-mono">
+                            <!-- Zde se vygeneruje vysvětlení částí příkazu -->
+                        </ul>
+                    </div>
+
+                    <!-- Analytický / Kontextový box -->
                     <div class="bg-blue-900/20 border border-blue-500/20 rounded-lg p-5 mb-6 shadow-inner">
                         <p id="step-box-text" class="text-[15px] text-blue-100 font-medium leading-relaxed">
                             <!-- Zde se vygeneruje kontextový text -->
@@ -212,7 +220,7 @@
 
     <!-- Skripty (Logika simulátoru) -->
     <script>
-        // Databáze scénářů
+        // Databáze scénářů včetně rozboru příkazů pro každý krok
         const scenarios = {
             'hash': {
                 badge: 'ÚTOK 1 / OCHRANA SOUBOROVÉHO SYSTÉMU',
@@ -227,8 +235,15 @@
                             "V této simulaci vygenerujeme hash ze slabého hesla 'tajneheslo'.",
                             "Situace imituje okamžik, kdy útočník exfiltroval systémový soubor."
                         ],
-                        preBox: "Nástroj OpenSSL aplikuje algoritmus SHA-512 společně s kryptografickou solí k vytvoření otisku hesla. Tímto se simuluje fáze, kdy útočník exfiltroval systémový soubor (např. /etc/shadow) a přesouvá se k offline analýze dat.",
-                        cmd: 'echo "reditel:$(openssl passwd -6 -salt sul tajneheslo)" > shadow.txt\ncat shadow.txt',
+                        cmdBreakdown: [
+                            "<b>echo \"...\":</b> Vypíše text na standardní výstup.",
+                            "<b>openssl passwd -6:</b> Vygeneruje hash hesla pomocí algoritmu SHA-512 (označení -6).",
+                            "<b>-salt sul:</b> Přidá k heslu náhodný řetězec (sůl) pro ztížení útoku předpřipravenými tabulkami.",
+                            "<b>> shadow.txt:</b> Přesměruje výstup (zápis) do nového souboru shadow.txt.",
+                            "<b>cat shadow.txt:</b> Vypíše obsah vytvořeného souboru na obrazovku."
+                        ],
+                        preBox: "Nástroj OpenSSL aplikuje algoritmus SHA-512 společně s kryptografickou solí k vytvoření otisku hesla. Tímto se simuluje fáze, kdy útočník exfiltroval systémový soubor a přesouvá se k offline analýze dat.",
+                        cmd: 'echo "reditel:$(openssl passwd -6 -salt sul tajneheslog)" > shadow.txt\ncat shadow.txt',
                         output: '<span class="text-white">reditel:</span><span class="text-gray-400">$6$sul$AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdefghijklmnopqrstuvwxyz0123456789AB</span>\n',
                         delay: 800,
                         postDesc: [
@@ -245,6 +260,11 @@
                             "Je využit slovníkový útok (Dictionary attack) namísto hrubé síly.",
                             "Program načítá miliony známých hesel ze souboru rockyou.txt.",
                             "Bleskově je hashuje a hledá shodu s cílovým hashem."
+                        ],
+                        cmdBreakdown: [
+                            "<b>john:</b> Spustí hlavní program John the Ripper pro analýzu a prolamování hesel.",
+                            "<b>--wordlist=...:</b> Určuje cestu k textovému souboru obsahujícímu slovník s miliony reálných hesel.",
+                            "<b>shadow.txt:</b> Vstupní soubor obsahující uživatelská jména a jejich záchytné hashe."
                         ],
                         preBox: "Tento výpočetní proces probíhá naprosto izolovaně od původního serveru. Nástroj John the Ripper systematicky generuje hashe z nejpoužívanějších slov lidského jazyka a hledá exaktní shodu. Primárním cílem je zneužít předvídatelnosti lidského chování při volbě hesel.",
                         cmd: 'john --wordlist=/usr/share/wordlists/rockyou.txt shadow.txt',
@@ -272,6 +292,13 @@
                             "Nástroj Netcat přechází do pasivního režimu na vybraném portu.",
                             "Systém čeká na inicializaci spojení, kterou provede sama oběť."
                         ],
+                        cmdBreakdown: [
+                            "<b>nc (Netcat):</b> Švýcarský nůž pro síťové operace, čtení a zápis přes TCP/UDP.",
+                            "<b>-l:</b> Přepne Netcat do režimu naslouchání (Listen) příchozích spojení.",
+                            "<b>-v:</b> Verbose režim (vypisuje podrobné informace o spojení).",
+                            "<b>-n:</b> Zpracovává IP adresy přímo, neprovádí DNS překlady (zrychlení).",
+                            "<b>-p 4444:</b> Definuje konkrétní port (4444), na kterém má program čekat na spojení."
+                        ],
                         preBox: "Místo překonávání Firewallu přímým síťovým náporem je připraven lokální naslouchací port. Útočník vytváří záchytný bod a spoléhá na běžnou konfiguraci infrastrukturních sítí, která za normálních okolností nefiltruje odchozí provoz uživatelů do internetu.",
                         cmd: 'nc -lvnp 4444',
                         output: 'listening on [any] 4444 ...\n<span class="text-gray-500">⏳ Čekání na příchozí spojení od oběti...</span>',
@@ -290,6 +317,12 @@
                             "Kód přesměruje systémový terminál (cmd/bash) na IP adresu útočníka.",
                             "Firewall spojení propouští jako legitimní odchozí požadavek do internetu.",
                             "Síťový tunel je aktivně navázán zevnitř chráněné sítě ven."
+                        ],
+                        cmdBreakdown: [
+                            "<b>Simulovaná akce:</b> V reálném prostředí spouští oběť skript, který navazuje TCP spojení.",
+                            "<b>127.0.0.1:</b> Cílová IP adresa útočníka (zde lokálně pro bezpečné demo).",
+                            "<b>Port 4444:</b> Cílový port, na kterém útočníkův Netcat pasivně čeká.",
+                            "<b>Výsledek:</b> Propojení příkazové řádky oběti se síťovým soketem útočníka."
                         ],
                         preBox: "Využitím nativních systémových procesů vzniká reverzní TCP spojení, které nevyvolává standardní chybová hlášení v uživatelském prostředí operačního systému. Spuštěný skript se pro operační systém chová jako standardní požadavek na komunikaci vnější aplikací.",
                         cmd: '/* Simulace: Oběť spustila payload. Přijímám paket... */',
@@ -318,6 +351,11 @@
                             "Vzniká vizuálně i strukturálně identická kopie požadovaného portálu.",
                             "Modul Credential Harvester se inicializuje pro zachytávání formulářových dat."
                         ],
+                        cmdBreakdown: [
+                            "<b>setoolkit:</b> Spuštění hlavního rámce Social-Engineer Toolkit v Kali Linuxu.",
+                            "<b>Volby 1 -> 2 -> 3 -> 2:</b> Navigace v textovém menu SET pro výběr webových útoků a klonování stránek.",
+                            "<b>Zadání URL:</b> Adresa reálného webu, jehož vzhled a přihlašovací pole má program zkopírovat."
+                        ],
                         preBox: "Infrastruktura pro sociální inženýrství je aktivována. Nástroj automatizovaně generuje webový server hostující podvržený obsah. Protože se jedná o standardní HTML kód bez binárních malwarových signatur, bezpečnostní řešení operačního systému (např. Windows Defender) nevyhodnotí tento proces jako riziko.",
                         cmd: 'setoolkit\n> 1 (Social-Engineering Attacks)\n> 2 (Website Attack Vectors)\n> 3 (Credential Harvester)\n> 2 (Site Cloner)\n> URL: http://skolni-portal.cz/login',
                         output: '[*] Cloning the website: http://skolni-portal.cz/login\n[*] This could take a little bit...\n<span class="text-green-400">[+] The best way to use this attack is if username and password form fields are available.</span>\n[*] Information will be displayed to you as it arrives below:\n<span class="text-gray-500">⏳ Čekání na oběť...</span>',
@@ -336,6 +374,11 @@
                             "Operační systém síťovou komunikaci neblokuje, neboť probíhá legitimní HTTP provoz.",
                             "Odeslaná data (HTTP POST) jsou přesměrována přímo do databáze útočníka.",
                             "Útočníkův server následně přesměruje oběť na originální web pro odvrácení podezření."
+                        ],
+                        cmdBreakdown: [
+                            "<b>HTTP POST požadavek:</b> Způsob, jakým prohlížeč odesílá data z formuláře na server.",
+                            "<b>Credential Harvester:</b> Modul, který zachytí proměnné jména a hesla dříve, než dojde k přesměrování.",
+                            "<b>Výsledek:</b> Výpis odcizených přihlašovacích údajů v konzoli útočníka."
                         ],
                         preBox: "Technická ochrana počítače nedokáže vyhodnotit psychologický kontext akce. Z pohledu operačního systému uživatel otevřel standardní webový prohlížeč a vyžádal si odeslání textových formulářových dat, což reprezentuje standardní chování internetové komunikace.",
                         cmd: '/* Simulace: Oběť zadala údaje a potvrdila přihlášení... */',
@@ -401,19 +444,21 @@
         }
 
         // Funkce: Aplikuje textovou sadu s animací
-        function applyDynamicText(descArray, boxText) {
-            // Odebrání třídy pro restart animace
+        function applyDynamicText(descArray, cmdBreakdownArray, boxText) {
             dynamicContentWrapper.classList.remove('fade-update');
             void dynamicContentWrapper.offsetWidth;
             
-            // Mapování pole do struktury HTML seznamu (odrážek)
+            // Vykreslení odrážek
             const ulElement = document.getElementById('step-desc');
             ulElement.innerHTML = descArray.map(item => `<li>${item}</li>`).join('');
+
+            // Vykreslení rozboru příkazu
+            const cmdList = document.getElementById('step-cmd-list');
+            cmdList.innerHTML = cmdBreakdownArray.map(item => `<li>• ${item}</li>`).join('');
             
             // Vložení textu do modrého analytického boxu
             document.getElementById('step-box-text').innerHTML = boxText;
             
-            // Přidání animační třídy
             dynamicContentWrapper.classList.add('fade-update');
         }
 
@@ -425,7 +470,7 @@
                 document.getElementById('step-counter').textContent = `${currentStepIndex + 1} / ${currentAppScenario.steps.length}`;
                 document.getElementById('step-title').textContent = stepData.title;
                 
-                applyDynamicText(stepData.preDesc, stepData.preBox);
+                applyDynamicText(stepData.preDesc, stepData.cmdBreakdown, stepData.preBox);
                 
                 document.getElementById('btn-run').classList.remove('hidden');
                 document.getElementById('btn-next').classList.add('hidden');
@@ -434,12 +479,12 @@
                 termActiveLine.classList.remove('hidden');
                 termTyping.textContent = '';
             } else if (state === 'post') {
-                applyDynamicText(stepData.postDesc, stepData.postBox);
+                applyDynamicText(stepData.postDesc, stepData.cmdBreakdown, stepData.postBox);
                 
                 if (currentStepIndex < currentAppScenario.steps.length - 1) {
                     document.getElementById('btn-next').classList.remove('hidden');
                 } else {
-                    document.getElementById('btn-finish').classList.remove('hidden');
+                    document.getElementById('btn-finish').classList.add('hidden');
                 }
             }
         }
@@ -456,7 +501,7 @@
             const commands = stepData.cmd.split('\n');
             for (let i = 0; i < commands.length; i++) {
                 termTyping.textContent = '';
-                await typeText(commands[i], 25); // rychlost psaní
+                await typeText(commands[i], 25);
                 
                 const cmdLine = document.createElement('div');
                 cmdLine.innerHTML = `<span class="text-green-400">kali@demo</span><span class="text-white">:</span><span class="text-sky-400">~</span><span class="text-white">$</span> <span class="text-white">${commands[i]}</span>`;
@@ -464,10 +509,8 @@
             }
             termActiveLine.classList.add('hidden');
 
-            // Simulace prodlevy (zpracování)
             await new Promise(r => setTimeout(r, stepData.delay));
 
-            // Zobrazení výstupu
             if (stepData.output) {
                 const outputBlock = document.createElement('div');
                 outputBlock.className = "mb-4 mt-1";
@@ -475,13 +518,11 @@
                 termLines.appendChild(outputBlock);
             }
             
-            // Posun scrollbaru
             const terminalBody = document.querySelector('.terminal-body');
             terminalBody.scrollTop = terminalBody.scrollHeight;
 
             isSimulating = false;
             
-            // Načtení vyhodnocovacího textu (post)
             loadStepState('post');
         }
 
@@ -495,7 +536,7 @@
                         i++;
                         setTimeout(typeWriter, speed);
                     } else {
-                        setTimeout(resolve, 300); // pauza po dopsání řádku
+                        setTimeout(resolve, 300);
                     }
                 }
                 typeWriter();

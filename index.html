@@ -160,17 +160,14 @@
                 
                 <!-- Obal pro dynamický text -->
                 <div id="dynamic-content-wrapper" class="flex-grow flex flex-col">
-                    <p id="step-desc" class="text-gray-300 text-[15px] leading-relaxed mb-6">
-                        Zde bude popsáno, co se právě děje...
-                    </p>
+                    <div id="step-desc" class="mb-8">
+                        <!-- Zde se vygenerují odrážky -->
+                    </div>
 
-                    <!-- Tahák pro prezentujícího -->
+                    <!-- Analytický / Kontextový box -->
                     <div id="speaker-box" class="bg-blue-900/20 border border-blue-500/20 rounded-lg p-5 mb-6 shadow-inner">
-                        <div class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <span>🎙️</span> Co říct spolužákům:
-                        </div>
-                        <p id="step-speaker" class="text-sm text-blue-200 italic leading-relaxed">
-                            Tady bude tvůj text k odprezentování...
+                        <p id="step-speaker" class="text-base text-blue-100 font-medium leading-relaxed">
+                            <!-- Zde se vygeneruje kontextový text -->
                         </p>
                     </div>
                 </div>
@@ -213,7 +210,7 @@
 
     <!-- Skripty (Logika simulátoru) -->
     <script>
-        // Databáze scénářů (Kompletní obsahy pro PRE a POST stav)
+        // Databáze scénářů (Kompletní obsahy pro PRE a POST stav s HTML odrážkami)
         const scenarios = {
             'hash': {
                 badge: 'ÚTOK 1 / OCHRANA SOUBOROVÉHO SYSTÉMU',
@@ -222,23 +219,51 @@
                 steps: [
                     {
                         title: 'Krok 1: Extrakce hashe z OS',
-                        preDesc: 'Operační systémy (Linux i Windows) z bezpečnostních důvodů nikdy neukládají hesla v čitelném textu. Využívají kryptografické hashovací funkce (např. SHA-512), které z hesla vytvoří zdánlivě náhodnou a matematicky nevratnou změť znaků. V reálném útoku by hacker tento záznam ze systému (ze souboru /etc/shadow) odcizil. My si jej nyní pro účely dema vygenerujeme ručně na základě slabého hesla "tajneheslo".',
-                        preSpeaker: 'Představte si, že se útočník dostal k databázi hesel. Kdyby tam byla hesla v textu, má vyhráno. Linux je ale chrání pomocí hashování. Já si teď přesně takový ukradený záznam uměle vytvořím – nechám systém vygenerovat SHA-512 hash ze slova "tajneheslo" s využitím kryptografické "soli".',
+                        preDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>OS (Windows/Linux) neukládá hesla v čitelném textu, ale využívá kryptografické <strong>hashovací funkce</strong> (např. SHA-512).</li>
+                                <li>Z hesla vznikne matematicky nevratná změť znaků.</li>
+                                <li>V této simulaci ručně generujeme hash pro slabé heslo "tajneheslo".</li>
+                                <li>Imitujeme tak situaci, kdy útočník ukradl systémový soubor <code>/etc/shadow</code>.</li>
+                            </ul>
+                        `,
+                        preSpeaker: 'Získání hashe je pouze prvním krokem. Samotný hash neobsahuje heslo v čitelné podobě. Útočník si takový záznam stáhne na svůj lokální stroj a připraví se na prolamování zcela nezávisle na původním serveru.',
                         cmd: 'echo "reditel:$(openssl passwd -6 -salt sul tajneheslo)" > shadow.txt\ncat shadow.txt',
                         output: '<span class="text-white">reditel:</span><span class="text-gray-400">$6$sul$AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdefghijklmnopqrstuvwxyz0123456789AB</span>\n',
                         delay: 800,
-                        postDesc: 'Příkaz openssl aplikoval vysoce bezpečný algoritmus SHA-512. Výsledný řetězec začínající formátem $6$ je to jediné, co útočník získal. Kvůli jednosměrnosti funkce z tohoto řetězce nelze původní heslo nijak exaktně vypočítat. Útočník má tak v rukou jen tento zašifrovaný textový soubor a jedinou cestou k úspěchu je pokusit se jej "uhodnout".',
-                        postSpeaker: 'Podívejte se na výsledek v terminálu. Vidíme uživatele "reditel" a za ním obrovskou změť znaků. I když my víme, že heslo zní "tajneheslo", systém to z tohoto hashe zpětně nedokáže spočítat. Útočník si teď tento soubor stáhl k sobě domů na svůj Kali Linux.'
+                        postDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Nástroj aplikoval algoritmus <strong>SHA-512</strong> s kryptografickou solí.</li>
+                                <li>Výsledkem je řetězec začínající formátem <code>$6$</code>.</li>
+                                <li>Kvůli jednosměrnosti funkce z něj nelze heslo exaktně zpětně vypočítat.</li>
+                                <li>Útočník musí použít metodu extrémně rychlého hádání na vlastním hardwaru.</li>
+                            </ul>
+                        `,
+                        postSpeaker: 'Zeleně je zobrazen vygenerovaný hash. Operační systém splnil svou primární roli a heslo úspěšně zašifroval. Tímto pro útočníka končí veškerá interakce se serverem – další postup probíhá skrytě a offline.'
                     },
                     {
                         title: 'Krok 2: Slovníkový útok (John the Ripper)',
-                        preDesc: 'Na řadu přichází ofenzivní nástroj John the Ripper. Místo neefektivního zkoušení všech možných kombinací znaků (Brute-force) provede lokální slovníkový útok (Dictionary attack). Bude bleskově číst miliony známých hesel ze slavného souboru rockyou.txt, hashoat je a výsledek porovnávat s naším ukradeným hashem.',
-                        preSpeaker: 'Teď nasadíme těžkou váhu – Johna the Rippera. Všimněte si, že útočník už vůbec nekomunikuje se serverem, útok probíhá lokálně, offline. Program vezme obří slovník nejčastějších hesel, zahashuje je a začne je porovnávat s naším cílem.',
+                        preDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Nástroj John the Ripper zahajuje lokální prolamování.</li>
+                                <li>Bude využit <strong>slovníkový útok</strong> (Dictionary attack) namísto pomalého hrubého odhadování.</li>
+                                <li>Program postupně načítá miliony známých hesel ze souboru <code>rockyou.txt</code>.</li>
+                                <li>Každé slovo extrémně rychle zahashuje a porovnává s ukradeným cílem.</li>
+                            </ul>
+                        `,
+                        preSpeaker: 'Tento proces nevyžaduje žádné připojení k cílovému serveru. Nástroj využívá čistý výpočetní výkon procesoru ke generování tisíců hashů za sekundu, dokud nenajde přesnou shodu s odcizeným záznamem.',
                         cmd: 'john --wordlist=/usr/share/wordlists/rockyou.txt shadow.txt',
                         output: 'Using default input encoding: UTF-8\nLoaded 1 password hash (sha512crypt, crypt(3) $6$ [SHA512 256/256 AVX2 4x])\nPress \'q\' or Ctrl-C to abort, almost any other key for status\n<span class="text-yellow-400">... prolamuji (simulace) ...</span>\n<span class="text-green-400 font-bold">tajneheslo</span>       (reditel)\n1g 0:00:00:01 DONE (2026-09-19 17:33) 1.000g/s 3450p/s 3450c/s 3450C/s\nUse the "--show" option to display all of the cracked passwords reliably',
                         delay: 1800,
-                        postDesc: 'Útok proběhl úspěšně a prakticky okamžitě. Protože uživatel "reditel" nedodržel bezpečnostní politiku OS a zvolil slabé heslo přítomné v běžném slovníku, sebelepší hashovací algoritmus ho nezachránil. Moderní grafické karty zvládnou provést miliony takových pokusů za sekundu.',
-                        postSpeaker: 'A máme to. Vidíte zeleně svítící "tajneheslo"? Protože bylo heslo slabé a nacházelo se v běžném slovníku, John ho našel okamžitě. Tímto nenápadným offline útokem dokázal hacker překonat hlavní obranný mechanismus operačního systému, aniž by s ním musel přímo bojovat.'
+                        postDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Útok proběhl úspěšně a heslo bylo odhaleno ve zlomku sekundy.</li>
+                                <li>Uživatel nedodržel bezpečnostní politiku a zvolil slabé, snadno uhodnutelné heslo.</li>
+                                <li>Silný algoritmus (SHA-512) nedokáže ochránit slovníkový vstup.</li>
+                                <li>Systémová ochrana byla spolehlivě překonána bez spuštění poplachu.</li>
+                            </ul>
+                        `,
+                        postSpeaker: 'Jakmile se na obrazovce objeví čistý text "tajneheslo", obrana OS definitivně padla. Tento scénář jasně prokazuje, proč je kriticky důležité vynucovat používání dlouhých hesel (passphrase), která se ve slovnících nevyskytují.'
                     }
                 ]
             },
@@ -249,23 +274,51 @@
                 steps: [
                     {
                         title: 'Krok 1: Naslouchání na straně útočníka',
-                        preDesc: 'Standardní síťový útok (Bind Shell) spolehlivě zablokuje Firewall operačního systému, protože odmítá neznámá příchozí spojení z internetu. Útočník proto volí koncepci "Reverse Shell". Přímo ve svém stroji spustí na určeném portu nástroj Netcat, který se přepne do pasivního režimu a bude čekat, až se mu operační systém oběti ohlásí sám.',
-                        preSpeaker: 'Firewall ve Windows funguje jako přísný strážný u vchodu do firmy – zvenčí nikoho nepustí. Proto se o to vůbec nebudeme snažit. V roli útočníka si u sebe pouze otevřu port 4444, zapnu naslouchání a budu čekat, až mi "zavolá" sama oběť zevnitř.',
+                        preDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Tradiční útoky zvenčí blokuje systémový <strong>Firewall</strong> (odmítá příchozí spojení).</li>
+                                <li>Řešením je implementace techniky <strong>Reverse Shell</strong>.</li>
+                                <li>Útočník spouští nástroj Netcat (<code>nc</code>) na specifickém portu svého stroje.</li>
+                                <li>Nástroj přechází do pasivního režimu a naslouchá, dokud se OS oběti neohlásí sám.</li>
+                            </ul>
+                        `,
+                        preSpeaker: 'Firewall je primárně nakonfigurován k ochraně vnitřní sítě před internetem. Útočník se nesnaží tuto bariéru prolomit silou. Připraví si záchytný bod a spoléhá na fakt, že Firewall zcela běžně propouští odchozí provoz.',
                         cmd: 'nc -lvnp 4444',
                         output: 'listening on [any] 4444 ...\n<span class="text-gray-500">⏳ Čekání na příchozí spojení od oběti...</span>',
                         delay: 1000,
-                        postDesc: 'Nástroj Netcat úspěšně otevřel port a přešel do tichého naslouchacího režimu (listening). Technická příprava útočníka tímto končí. Nyní musí dojít k interakci uvnitř chráněné sítě oběti – typicky spuštěním škodlivého kódu z e-mailu.',
-                        postSpeaker: 'Terminál se "zasekl". Program Netcat naslouchá a čeká. Naše past je připravená. Z technického hlediska teď nemůžeme dělat nic jiného, než čekat, až uživatel uvnitř chráněné sítě udělá osudovou chybu a nevědomky spustí náš kód.'
+                        postDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Nástroj úspěšně otevřel port 4444 a běží v režimu naslouchání (listening).</li>
+                                <li>Na straně útočníka je technická příprava zcela kompletní.</li>
+                                <li>Nyní se čeká na inicializační akci uvnitř zabezpečené sítě.</li>
+                                <li>Typickým spouštěčem bývá otevření infikované e-mailové přílohy uživatelem.</li>
+                            </ul>
+                        `,
+                        postSpeaker: 'Terminál je nyní uzamčen ve stavu naslouchání. Past je vytvořena. Dokud nedojde ke spuštění škodlivého kódu na cílové stanici, nevzniká absolutně žádný síťový provoz a antivirové systémy nemají co detekovat.'
                     },
                     {
                         title: 'Krok 2: Spuštění payloadu obětí',
-                        preDesc: 'Tento krok simuluje situaci, kdy uživatel obdrží podvodný e-mail a spustí přílohu. Skrytý skript bez jakéhokoliv chybového hlášení tiše přesměruje systémový proces terminálu na IP adresu útočníka. Restriktivní Firewall toto spojení bez varování propustí, neboť jej vyhodnotí jako naprosto běžný odchozí provoz na internet.',
-                        preSpeaker: 'Teď si představme, že oběť právě otevřela náš "falešný fakturový dokument". V OS nevyskočí žádný error ani okno. Pod povrchem ale její systémový terminál právě aktivně navazuje spojení s naším čekajícím Netcatem. Podívejme se, co nám to vypíše.',
+                        preDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Simulace okamžiku, kdy oběť otevírá podvodný spustitelný soubor.</li>
+                                <li>Kód potichu přesměruje proces systémového terminálu na IP adresu útočníka.</li>
+                                <li>Firewall toto spojení bez varování propustí jako legitimní požadavek do internetu.</li>
+                                <li>Síťové spojení je aktivně navázáno zevnitř ven.</li>
+                            </ul>
+                        `,
+                        preSpeaker: 'V okamžiku spuštění payloadu na straně oběti nedochází k zobrazení žádného chybového hlášení. Na pozadí operačního systému se však vytvoří šifrovaný tunel, který obratem předá kontrolu nad příkazovou řádkou vzdálenému stroji.',
                         cmd: '/* Simulace: Oběť spustila payload. Přijímám paket... */',
                         output: 'connect to [127.0.0.1] from (UNKNOWN) [127.0.0.1] 58292\n<span class="text-green-400">C:\\Windows\\System32></span> whoami\ndesktop-obet\\uzivatel\n<span class="text-green-400">C:\\Windows\\System32></span> echo "Mám plnou kontrolu!"\n"Mám plnou kontrolu!"',
                         delay: 2000,
-                        postDesc: 'Firewall byl úspěšně obejit bez prolomení jediného systémového hesla. Útočník navázal Reverse spojení a v jeho terminálu se otevřela příkazová řádka (cmd/powershell) napadeného operačního systému. Nyní může tiše procházet disky a krást data s oprávněním napadeného uživatele.',
-                        postSpeaker: 'Bingo. Vidíte ten výpis ze systému Windows v našem Linuxovém terminálu? Přesně tady u sebe mám plný přístup do cizího počítače. Firewall nezareagoval, protože spojení iniciovala samotná oběť zevnitř ven. Tímto jsme ukázali, že samotný Firewall k ochraně zkrátka nestačí.'
+                        postDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Spojení bylo úspěšně navázáno a Firewall byl tiše obejit.</li>
+                                <li>V terminálu útočníka je nyní k dispozici plnohodnotná příkazová řádka napadeného OS.</li>
+                                <li>Útočník disponuje identickými systémovými oprávněními jako přihlášený uživatel.</li>
+                                <li>Cesta k instalaci ransomwaru nebo exfiltraci dat je zcela volná.</li>
+                            </ul>
+                        `,
+                        postSpeaker: 'Zobrazený výstup potvrzuje plné dálkové ovládnutí stroje přímo z našeho terminálu. Tento mechanismus jasně dokazuje, že spoléhat se na perimetrový Firewall je nedostatečné a moderní infrastruktura vyžaduje pokročilou ochranu koncových bodů (EDR).'
                     }
                 ]
             },
@@ -276,23 +329,51 @@
                 steps: [
                     {
                         title: 'Krok 1: Klonování legitimní stránky',
-                        preDesc: 'Pokud je infrastruktura perfektně zabezpečená, hackeři neútočí na hardware, ale na člověka (Social Engineering). Kali Linux obsahuje automatizovaný nástroj SET, který dokáže během několika sekund stáhnout, zanalyzovat a 1:1 zkopírovat jakýkoliv přihlašovací portál a spustit jej na vlastním skrytém serveru.',
-                        preSpeaker: 'Pokud má firma aktualizovaný OS a silná hesla, nebudeme se se strojem vůbec prát. Zaútočíme přímo na mozek člověka. Pomocí nástroje SET teď naklonuji školní přihlašovací portál a vytvořím tak pro oběť dokonalou past.',
+                        preDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Pokud je technická obrana OS nepřekonatelná, zaměřuje se útok primárně na <strong>lidský faktor</strong>.</li>
+                                <li>Nasazení automatizovaného modulu SET (Social-Engineer Toolkit) z výbavy Kali Linuxu.</li>
+                                <li>Nástroj analyzuje a klonuje zdrojový kód zadaného přihlašovacího portálu.</li>
+                                <li>Vzniká vizuálně i strukturálně identická kopie hostovaná na serveru útočníka.</li>
+                            </ul>
+                        `,
+                        preSpeaker: 'Praktiky sociálního inženýrství efektivně obchází hardwarové i softwarové zabezpečení tím, že manipulují s důvěrou samotného uživatele. Proces automatizovaného klonování zajišťuje, že podvržená stránka bude k nerozeznání od reálného originálu.',
                         cmd: 'setoolkit\n> 1 (Social-Engineering Attacks)\n> 2 (Website Attack Vectors)\n> 3 (Credential Harvester)\n> 2 (Site Cloner)\n> URL: http://skolni-portal.cz/login',
                         output: '[*] Cloning the website: http://skolni-portal.cz/login\n[*] This could take a little bit...\n<span class="text-green-400">[+] The best way to use this attack is if username and password form fields are available.</span>\n[*] Information will be displayed to you as it arrives below:\n<span class="text-gray-500">⏳ Čekání na oběť...</span>',
                         delay: 2200,
-                        postDesc: 'Identická kopie webu úspěšně běží a naslouchá na serveru útočníka. Proces "Credential Harvester" nyní potichu zachytává všechny odesílané HTTP POST požadavky (vyplněné formuláře). Útočníkovi teď stačí pouze rozšířit infikovaný odkaz, například skrze cílený Spear-Phishingový e-mail.',
-                        postSpeaker: 'Náš dokonalý klon už běží. Nástroj zachytává všechno, co do něj kdokoliv napíše. Teď už jen stačí poslat oběti e-mail, který říká třeba: "Platnost vašeho hesla končí, klikněte zde pro okamžitou změnu". A trpělivě čekat u terminálu.'
+                        postDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Identická kopie webu úspěšně naslouchá příchozím HTTP požadavkům.</li>
+                                <li>Modul <strong>Credential Harvester</strong> je připraven k zachytávání veškerých dat z webových formulářů.</li>
+                                <li>Zadané údaje budou automaticky extrahovány a uloženy přímo k útočníkovi.</li>
+                                <li>Nyní probíhá fáze distribuce podvrženého odkazu (např. phishingovým e-mailem).</li>
+                            </ul>
+                        `,
+                        postSpeaker: 'Falešný server je v plném provozu. Vzhledem k tomu, že hostuje standardní HTML kód a nikoliv škodlivý malware, běžné bezpečnostní filtry a antivirové programy OS tuto hrozbu povětšinou vůbec neidentifikují.'
                     },
                     {
                         title: 'Krok 2: Zachycení nešifrovaných údajů',
-                        preDesc: 'Oběť na podvržený odkaz klikla, vidí vizuálně známé firemní prostředí a ve vší důvěře odesílá své jméno a heslo. Bezpečnostní procesy operačního systému v tuto chvíli nereagují – z technického hlediska uživatel naprosto legitimně surfuje po webu a dobrovolně vkládá data.',
-                        preSpeaker: 'Oběť otevřela náš odkaz. Nic netuší a přihlašuje se. Windows mlčí, antivir nevydal jedinou hlásku – proč by také ano, uživatel prostě jen otevřel webovou stránku. Sledujte prosím pozorně, co se stane v našem terminálu.',
+                        preDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Oběť otevírá podvržený odkaz a nachází se ve vizuálně známém prostředí.</li>
+                                <li>V dobré víře standardně vyplňuje své uživatelské jméno a heslo.</li>
+                                <li>Operační systém neindikuje žádnou hrozbu – probíhá naprosto legitimní webová komunikace.</li>
+                                <li>Po odeslání jsou data směrována přímo do databáze naslouchajícího útočníka.</li>
+                            </ul>
+                        `,
+                        preSpeaker: 'Cílový uživatel zcela dobrovolně a vědomě odevzdává své přihlašovací údaje. Jakmile stiskne potvrzovací tlačítko, citlivá data opouští perimetr prohlížeče a putují bez asymetrického šifrování k našemu uzlu.',
                         cmd: '/* Simulace: Oběť zadala údaje a potvrdila přihlášení... */',
                         output: '<span class="text-yellow-400">[*] WE GOT A HIT! Printing the output:</span>\n<span class="text-red-400">POSSIBLE USERNAME FIELD FOUND:</span> novak_jan\n<span class="text-red-400">POSSIBLE PASSWORD FIELD FOUND:</span> Skola2026!\n[*] Victim IP: 192.168.1.104',
                         delay: 1500,
-                        postDesc: 'V okamžiku stisknutí tlačítka "Přihlásit" byly údaje přesměrovány k útočníkovi a vypsány v jasném (nezašifrovaném) textu. Aby SET zabránil podezření, obratem oběť přesměroval na pravou stránku. Útok odhalil základní bezpečnostní pravidlo: I ten nejdokonalejší OS je k ničemu, pokud selže úsudek koncového uživatele.',
-                        postSpeaker: 'A máme je. Vidíte červeně zachycené uživatelské jméno a heslo v čistém textu? Systém jsme nemuseli hackovat, prostě jsme ho obešli. Proti takovému podvrhu samotný OS uživatele neochrání – jedinou spolehlivou systémovou překážkou by zde bylo použití dvoufaktorového ověřování (2FA).'
+                        postDesc: `
+                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
+                                <li>Data byla úspěšně zachycena a analyzována v čistém, nezašifrovaném textu.</li>
+                                <li>Pro zamezení podezření modul okamžitě přesměroval oběť na reálný portál (uživatel předpokládá překlep).</li>
+                                <li>Pokročilé systémové zabezpečení naprosto selhalo z důvodu chybného úsudku lidského faktoru.</li>
+                                <li>Jedinou spolehlivou restrikcí v této situaci je vynucené dvoufaktorové ověřování (2FA).</li>
+                            </ul>
+                        `,
+                        postSpeaker: 'Terminálový výstup explicitně zachycuje získané jméno a heslo. Prokazuje se tím, že ani špičková softwarová ochrana nedokáže kompenzovat absenci bezpečnostního povědomí. Implementace druhého ověřovacího faktoru by útočníkovi odcizené heslo prakticky znehodnotila.'
                     }
                 ]
             }

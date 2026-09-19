@@ -155,18 +155,20 @@
             <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 flex-grow flex flex-col shadow-xl">
                 <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
                     <h3 id="step-title" class="text-xl font-bold text-white">Krok 1: Příprava</h3>
-                    <span id="step-counter" class="text-sm font-mono text-gray-500 bg-gray-800 px-3 py-1 rounded-full">1 / 3</span>
+                    <span id="step-counter" class="text-sm font-mono text-gray-400 bg-gray-800 px-3 py-1 rounded-full whitespace-nowrap flex-shrink-0">1 / 3</span>
                 </div>
                 
                 <!-- Obal pro dynamický text -->
                 <div id="dynamic-content-wrapper" class="flex-grow flex flex-col">
-                    <div id="step-desc" class="mb-8">
-                        <!-- Zde se vygenerují odrážky -->
-                    </div>
+                    
+                    <!-- Dynamické odrážky -->
+                    <ul id="step-desc" class="list-disc pl-6 space-y-3 text-lg text-gray-200 mb-8">
+                        <!-- Zde se vygenerují odrážky přes JS -->
+                    </ul>
 
-                    <!-- Analytický / Kontextový box -->
-                    <div id="speaker-box" class="bg-blue-900/20 border border-blue-500/20 rounded-lg p-5 mb-6 shadow-inner">
-                        <p id="step-speaker" class="text-base text-blue-100 font-medium leading-relaxed">
+                    <!-- Analytický / Kontextový box (bez hlavičky) -->
+                    <div class="bg-blue-900/20 border border-blue-500/20 rounded-lg p-5 mb-6 shadow-inner">
+                        <p id="step-box-text" class="text-[15px] text-blue-100 font-medium leading-relaxed">
                             <!-- Zde se vygeneruje kontextový text -->
                         </p>
                     </div>
@@ -210,60 +212,50 @@
 
     <!-- Skripty (Logika simulátoru) -->
     <script>
-        // Databáze scénářů (Kompletní obsahy pro PRE a POST stav s HTML odrážkami)
+        // Databáze scénářů
         const scenarios = {
             'hash': {
                 badge: 'ÚTOK 1 / OCHRANA SOUBOROVÉHO SYSTÉMU',
                 color: 'sky',
-                title: 'Prolomení systémového hesla',
+                title: 'Prolomení hesla (John the Ripper)',
                 steps: [
                     {
                         title: 'Krok 1: Extrakce hashe z OS',
-                        preDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>OS (Windows/Linux) neukládá hesla v čitelném textu, ale využívá kryptografické <strong>hashovací funkce</strong> (např. SHA-512).</li>
-                                <li>Z hesla vznikne matematicky nevratná změť znaků.</li>
-                                <li>V této simulaci ručně generujeme hash pro slabé heslo "tajneheslo".</li>
-                                <li>Imitujeme tak situaci, kdy útočník ukradl systémový soubor <code>/etc/shadow</code>.</li>
-                            </ul>
-                        `,
-                        preSpeaker: 'Získání hashe je pouze prvním krokem. Samotný hash neobsahuje heslo v čitelné podobě. Útočník si takový záznam stáhne na svůj lokální stroj a připraví se na prolamování zcela nezávisle na původním serveru.',
+                        preDesc: [
+                            "OS (Windows/Linux) z bezpečnostních důvodů neukládá hesla v čitelném textu.",
+                            "Využívá jednosměrné hashovací funkce (např. SHA-512).",
+                            "V této simulaci vygenerujeme hash ze slabého hesla 'tajneheslo'.",
+                            "Situace imituje okamžik, kdy útočník exfiltroval systémový soubor."
+                        ],
+                        preBox: "Nástroj OpenSSL aplikuje algoritmus SHA-512 společně s kryptografickou solí k vytvoření otisku hesla. Tímto se simuluje fáze, kdy útočník exfiltroval systémový soubor (např. /etc/shadow) a přesouvá se k offline analýze dat.",
                         cmd: 'echo "reditel:$(openssl passwd -6 -salt sul tajneheslo)" > shadow.txt\ncat shadow.txt',
                         output: '<span class="text-white">reditel:</span><span class="text-gray-400">$6$sul$AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdefghijklmnopqrstuvwxyz0123456789AB</span>\n',
                         delay: 800,
-                        postDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Nástroj aplikoval algoritmus <strong>SHA-512</strong> s kryptografickou solí.</li>
-                                <li>Výsledkem je řetězec začínající formátem <code>$6$</code>.</li>
-                                <li>Kvůli jednosměrnosti funkce z něj nelze heslo exaktně zpětně vypočítat.</li>
-                                <li>Útočník musí použít metodu extrémně rychlého hádání na vlastním hardwaru.</li>
-                            </ul>
-                        `,
-                        postSpeaker: 'Zeleně je zobrazen vygenerovaný hash. Operační systém splnil svou primární roli a heslo úspěšně zašifroval. Tímto pro útočníka končí veškerá interakce se serverem – další postup probíhá skrytě a offline.'
+                        postDesc: [
+                            "Hash byl úspěšně vygenerován (identifikovatelný prefixem $6$).",
+                            "Původní heslo z něj nelze zpětně dešifrovat.",
+                            "Jedinou metodou prolomení je lokální výpočetní hádání zkoušením kombinací."
+                        ],
+                        postBox: "Vygenerovaný řetězec je matematicky chráněn proti zpětnému inženýrství. Operační systém tímto krokem úspěšně skryl původní heslo před přímým přečtením. Získaná data musí být nyní analyzována a prolamována v izolovaném prostředí ovládaném útočníkem."
                     },
                     {
-                        title: 'Krok 2: Slovníkový útok (John the Ripper)',
-                        preDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Nástroj John the Ripper zahajuje lokální prolamování.</li>
-                                <li>Bude využit <strong>slovníkový útok</strong> (Dictionary attack) namísto pomalého hrubého odhadování.</li>
-                                <li>Program postupně načítá miliony známých hesel ze souboru <code>rockyou.txt</code>.</li>
-                                <li>Každé slovo extrémně rychle zahashuje a porovnává s ukradeným cílem.</li>
-                            </ul>
-                        `,
-                        preSpeaker: 'Tento proces nevyžaduje žádné připojení k cílovému serveru. Nástroj využívá čistý výpočetní výkon procesoru ke generování tisíců hashů za sekundu, dokud nenajde přesnou shodu s odcizeným záznamem.',
+                        title: 'Krok 2: Slovníkový útok',
+                        preDesc: [
+                            "Nástroj John the Ripper zahajuje lokální offline prolamování.",
+                            "Je využit slovníkový útok (Dictionary attack) namísto hrubé síly.",
+                            "Program načítá miliony známých hesel ze souboru rockyou.txt.",
+                            "Bleskově je hashuje a hledá shodu s cílovým hashem."
+                        ],
+                        preBox: "Tento výpočetní proces probíhá naprosto izolovaně od původního serveru. Nástroj John the Ripper systematicky generuje hashe z nejpoužívanějších slov lidského jazyka a hledá exaktní shodu. Primárním cílem je zneužít předvídatelnosti lidského chování při volbě hesel.",
                         cmd: 'john --wordlist=/usr/share/wordlists/rockyou.txt shadow.txt',
                         output: 'Using default input encoding: UTF-8\nLoaded 1 password hash (sha512crypt, crypt(3) $6$ [SHA512 256/256 AVX2 4x])\nPress \'q\' or Ctrl-C to abort, almost any other key for status\n<span class="text-yellow-400">... prolamuji (simulace) ...</span>\n<span class="text-green-400 font-bold">tajneheslo</span>       (reditel)\n1g 0:00:00:01 DONE (2026-09-19 17:33) 1.000g/s 3450p/s 3450c/s 3450C/s\nUse the "--show" option to display all of the cracked passwords reliably',
                         delay: 1800,
-                        postDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Útok proběhl úspěšně a heslo bylo odhaleno ve zlomku sekundy.</li>
-                                <li>Uživatel nedodržel bezpečnostní politiku a zvolil slabé, snadno uhodnutelné heslo.</li>
-                                <li>Silný algoritmus (SHA-512) nedokáže ochránit slovníkový vstup.</li>
-                                <li>Systémová ochrana byla spolehlivě překonána bez spuštění poplachu.</li>
-                            </ul>
-                        `,
-                        postSpeaker: 'Jakmile se na obrazovce objeví čistý text "tajneheslo", obrana OS definitivně padla. Tento scénář jasně prokazuje, proč je kriticky důležité vynucovat používání dlouhých hesel (passphrase), která se ve slovnících nevyskytují.'
+                        postDesc: [
+                            "Heslo bylo odhaleno a převedeno do čistého textu ve zlomku sekundy.",
+                            "Kryptografická síla algoritmu nedokázala kompenzovat triviální heslo.",
+                            "Ochrana OS byla prolomena bez spuštění síťového poplachu."
+                        ],
+                        postBox: "Objevení čistého textu \"tajneheslo\" dokazuje, že kryptografická ochrana operačního systému je zcela neúčinná, pokud je vstupní hodnota triviální. Útočník obchází mechanismy zamykání účtů i monitoring logů, jelikož proces prolamování neprobíhal vůči aktivnímu serveru."
                     }
                 ]
             },
@@ -274,51 +266,42 @@
                 steps: [
                     {
                         title: 'Krok 1: Naslouchání na straně útočníka',
-                        preDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Tradiční útoky zvenčí blokuje systémový <strong>Firewall</strong> (odmítá příchozí spojení).</li>
-                                <li>Řešením je implementace techniky <strong>Reverse Shell</strong>.</li>
-                                <li>Útočník spouští nástroj Netcat (<code>nc</code>) na specifickém portu svého stroje.</li>
-                                <li>Nástroj přechází do pasivního režimu a naslouchá, dokud se OS oběti neohlásí sám.</li>
-                            </ul>
-                        `,
-                        preSpeaker: 'Firewall je primárně nakonfigurován k ochraně vnitřní sítě před internetem. Útočník se nesnaží tuto bariéru prolomit silou. Připraví si záchytný bod a spoléhá na fakt, že Firewall zcela běžně propouští odchozí provoz.',
+                        preDesc: [
+                            "Standardní síťové útoky blokuje systémový Firewall.",
+                            "Útočník jako alternativu nasazuje techniku Reverse Shell.",
+                            "Nástroj Netcat přechází do pasivního režimu na vybraném portu.",
+                            "Systém čeká na inicializaci spojení, kterou provede sama oběť."
+                        ],
+                        preBox: "Místo překonávání Firewallu přímým síťovým náporem je připraven lokální naslouchací port. Útočník vytváří záchytný bod a spoléhá na běžnou konfiguraci infrastrukturních sítí, která za normálních okolností nefiltruje odchozí provoz uživatelů do internetu.",
                         cmd: 'nc -lvnp 4444',
                         output: 'listening on [any] 4444 ...\n<span class="text-gray-500">⏳ Čekání na příchozí spojení od oběti...</span>',
                         delay: 1000,
-                        postDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Nástroj úspěšně otevřel port 4444 a běží v režimu naslouchání (listening).</li>
-                                <li>Na straně útočníka je technická příprava zcela kompletní.</li>
-                                <li>Nyní se čeká na inicializační akci uvnitř zabezpečené sítě.</li>
-                                <li>Typickým spouštěčem bývá otevření infikované e-mailové přílohy uživatelem.</li>
-                            </ul>
-                        `,
-                        postSpeaker: 'Terminál je nyní uzamčen ve stavu naslouchání. Past je vytvořena. Dokud nedojde ke spuštění škodlivého kódu na cílové stanici, nevzniká absolutně žádný síťový provoz a antivirové systémy nemají co detekovat.'
+                        postDesc: [
+                            "Nástroj úspěšně otevřel síťový port a aktivoval režim naslouchání.",
+                            "Technická příprava útočníka je v tuto chvíli dokončena.",
+                            "Z pohledu sítě momentálně neprobíhá žádná anomální aktivita."
+                        ],
+                        postBox: "Síťový terminál je uzamčen v naslouchacím stavu. Vzhledem k tomu, že k navázání spojení musí dojít zevnitř chráněné sítě oběti, nevzniká v tuto chvíli žádný odesílaný paket a perimetrové antivirové brány nemají k dispozici žádná data k analýze hrozby."
                     },
                     {
                         title: 'Krok 2: Spuštění payloadu obětí',
-                        preDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Simulace okamžiku, kdy oběť otevírá podvodný spustitelný soubor.</li>
-                                <li>Kód potichu přesměruje proces systémového terminálu na IP adresu útočníka.</li>
-                                <li>Firewall toto spojení bez varování propustí jako legitimní požadavek do internetu.</li>
-                                <li>Síťové spojení je aktivně navázáno zevnitř ven.</li>
-                            </ul>
-                        `,
-                        preSpeaker: 'V okamžiku spuštění payloadu na straně oběti nedochází k zobrazení žádného chybového hlášení. Na pozadí operačního systému se však vytvoří šifrovaný tunel, který obratem předá kontrolu nad příkazovou řádkou vzdálenému stroji.',
+                        preDesc: [
+                            "Oběť nevědomky otevírá infikovaný spustitelný soubor (payload).",
+                            "Kód přesměruje systémový terminál (cmd/bash) na IP adresu útočníka.",
+                            "Firewall spojení propouští jako legitimní odchozí požadavek do internetu.",
+                            "Síťový tunel je aktivně navázán zevnitř chráněné sítě ven."
+                        ],
+                        preBox: "Využitím nativních systémových procesů vzniká reverzní TCP spojení, které nevyvolává standardní chybová hlášení v uživatelském prostředí operačního systému. Spuštěný skript se pro operační systém chová jako standardní požadavek na komunikaci vnější aplikací.",
                         cmd: '/* Simulace: Oběť spustila payload. Přijímám paket... */',
                         output: 'connect to [127.0.0.1] from (UNKNOWN) [127.0.0.1] 58292\n<span class="text-green-400">C:\\Windows\\System32></span> whoami\ndesktop-obet\\uzivatel\n<span class="text-green-400">C:\\Windows\\System32></span> echo "Mám plnou kontrolu!"\n"Mám plnou kontrolu!"',
                         delay: 2000,
-                        postDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Spojení bylo úspěšně navázáno a Firewall byl tiše obejit.</li>
-                                <li>V terminálu útočníka je nyní k dispozici plnohodnotná příkazová řádka napadeného OS.</li>
-                                <li>Útočník disponuje identickými systémovými oprávněními jako přihlášený uživatel.</li>
-                                <li>Cesta k instalaci ransomwaru nebo exfiltraci dat je zcela volná.</li>
-                            </ul>
-                        `,
-                        postSpeaker: 'Zobrazený výstup potvrzuje plné dálkové ovládnutí stroje přímo z našeho terminálu. Tento mechanismus jasně dokazuje, že spoléhat se na perimetrový Firewall je nedostatečné a moderní infrastruktura vyžaduje pokročilou ochranu koncových bodů (EDR).'
+                        postDesc: [
+                            "Síťové spojení bylo úspěšně navázáno, Firewall byl obejit.",
+                            "Útočník získal v terminálu plnohodnotnou příkazovou řádku oběti.",
+                            "Aktivita probíhá s bezpečnostními oprávněními napadeného uživatele.",
+                            "Útočník má volný přístup k souborovému systému a procesům OS."
+                        ],
+                        postBox: "Výsledkem je plnohodnotná interaktivní relace propůjčující útočníkovi vzdálená systémová práva. Ochranný perimetr podnikové sítě byl úspěšně obelstěn využitím vlastních povolených pravidel, což prokazuje nebezpečí slepé důvěry v odchozí síťovou komunikaci."
                     }
                 ]
             },
@@ -328,52 +311,43 @@
                 title: 'Phishing (Social-Engineer Toolkit)',
                 steps: [
                     {
-                        title: 'Krok 1: Klonování legitimní stránky',
-                        preDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Pokud je technická obrana OS nepřekonatelná, zaměřuje se útok primárně na <strong>lidský faktor</strong>.</li>
-                                <li>Nasazení automatizovaného modulu SET (Social-Engineer Toolkit) z výbavy Kali Linuxu.</li>
-                                <li>Nástroj analyzuje a klonuje zdrojový kód zadaného přihlašovacího portálu.</li>
-                                <li>Vzniká vizuálně i strukturálně identická kopie hostovaná na serveru útočníka.</li>
-                            </ul>
-                        `,
-                        preSpeaker: 'Praktiky sociálního inženýrství efektivně obchází hardwarové i softwarové zabezpečení tím, že manipulují s důvěrou samotného uživatele. Proces automatizovaného klonování zajišťuje, že podvržená stránka bude k nerozeznání od reálného originálu.',
+                        title: 'Krok 1: Klonování přihlašovacího portálu',
+                        preDesc: [
+                            "Útok se zaměřuje výhradně na lidský faktor, čímž obchází technické zabezpečení OS.",
+                            "Modul SET (Social-Engineer Toolkit) analyzuje a klonuje zdrojový kód webu.",
+                            "Vzniká vizuálně i strukturálně identická kopie požadovaného portálu.",
+                            "Modul Credential Harvester se inicializuje pro zachytávání formulářových dat."
+                        ],
+                        preBox: "Infrastruktura pro sociální inženýrství je aktivována. Nástroj automatizovaně generuje webový server hostující podvržený obsah. Protože se jedná o standardní HTML kód bez binárních malwarových signatur, bezpečnostní řešení operačního systému (např. Windows Defender) nevyhodnotí tento proces jako riziko.",
                         cmd: 'setoolkit\n> 1 (Social-Engineering Attacks)\n> 2 (Website Attack Vectors)\n> 3 (Credential Harvester)\n> 2 (Site Cloner)\n> URL: http://skolni-portal.cz/login',
                         output: '[*] Cloning the website: http://skolni-portal.cz/login\n[*] This could take a little bit...\n<span class="text-green-400">[+] The best way to use this attack is if username and password form fields are available.</span>\n[*] Information will be displayed to you as it arrives below:\n<span class="text-gray-500">⏳ Čekání na oběť...</span>',
                         delay: 2200,
-                        postDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Identická kopie webu úspěšně naslouchá příchozím HTTP požadavkům.</li>
-                                <li>Modul <strong>Credential Harvester</strong> je připraven k zachytávání veškerých dat z webových formulářů.</li>
-                                <li>Zadané údaje budou automaticky extrahovány a uloženy přímo k útočníkovi.</li>
-                                <li>Nyní probíhá fáze distribuce podvrženého odkazu (např. phishingovým e-mailem).</li>
-                            </ul>
-                        `,
-                        postSpeaker: 'Falešný server je v plném provozu. Vzhledem k tomu, že hostuje standardní HTML kód a nikoliv škodlivý malware, běžné bezpečnostní filtry a antivirové programy OS tuto hrozbu povětšinou vůbec neidentifikují.'
+                        postDesc: [
+                            "Kopie webu úspěšně hostuje na doméně nebo IP adrese útočníka.",
+                            "Naslouchací proces je připraven převzít příchozí HTTP komunikaci.",
+                            "Následuje fáze distribuce URL odkazu koncovým uživatelům."
+                        ],
+                        postBox: "Platforma pro zneužití důvěry je funkční a připravená přijímat oběti. Úspěch této metodiky již není závislý na technických slabinách infrastruktury cíle, nýbrž na schopnosti útočníka vytvořit dostatečně přesvědčivou komunikační kampaň (např. phishingový e-mail)."
                     },
                     {
                         title: 'Krok 2: Zachycení nešifrovaných údajů',
-                        preDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Oběť otevírá podvržený odkaz a nachází se ve vizuálně známém prostředí.</li>
-                                <li>V dobré víře standardně vyplňuje své uživatelské jméno a heslo.</li>
-                                <li>Operační systém neindikuje žádnou hrozbu – probíhá naprosto legitimní webová komunikace.</li>
-                                <li>Po odeslání jsou data směrována přímo do databáze naslouchajícího útočníka.</li>
-                            </ul>
-                        `,
-                        preSpeaker: 'Cílový uživatel zcela dobrovolně a vědomě odevzdává své přihlašovací údaje. Jakmile stiskne potvrzovací tlačítko, citlivá data opouští perimetr prohlížeče a putují bez asymetrického šifrování k našemu uzlu.',
+                        preDesc: [
+                            "Oběť otevírá podvržený odkaz a vyplňuje své osobní přihlašovací údaje.",
+                            "Operační systém síťovou komunikaci neblokuje, neboť probíhá legitimní HTTP provoz.",
+                            "Odeslaná data (HTTP POST) jsou přesměrována přímo do databáze útočníka.",
+                            "Útočníkův server následně přesměruje oběť na originální web pro odvrácení podezření."
+                        ],
+                        preBox: "Technická ochrana počítače nedokáže vyhodnotit psychologický kontext akce. Z pohledu operačního systému uživatel otevřel standardní webový prohlížeč a vyžádal si odeslání textových formulářových dat, což reprezentuje standardní chování internetové komunikace.",
                         cmd: '/* Simulace: Oběť zadala údaje a potvrdila přihlášení... */',
                         output: '<span class="text-yellow-400">[*] WE GOT A HIT! Printing the output:</span>\n<span class="text-red-400">POSSIBLE USERNAME FIELD FOUND:</span> novak_jan\n<span class="text-red-400">POSSIBLE PASSWORD FIELD FOUND:</span> Skola2026!\n[*] Victim IP: 192.168.1.104',
                         delay: 1500,
-                        postDesc: `
-                            <ul class="list-disc pl-6 space-y-3 text-lg text-gray-200">
-                                <li>Data byla úspěšně zachycena a analyzována v čistém, nezašifrovaném textu.</li>
-                                <li>Pro zamezení podezření modul okamžitě přesměroval oběť na reálný portál (uživatel předpokládá překlep).</li>
-                                <li>Pokročilé systémové zabezpečení naprosto selhalo z důvodu chybného úsudku lidského faktoru.</li>
-                                <li>Jedinou spolehlivou restrikcí v této situaci je vynucené dvoufaktorové ověřování (2FA).</li>
-                            </ul>
-                        `,
-                        postSpeaker: 'Terminálový výstup explicitně zachycuje získané jméno a heslo. Prokazuje se tím, že ani špičková softwarová ochrana nedokáže kompenzovat absenci bezpečnostního povědomí. Implementace druhého ověřovacího faktoru by útočníkovi odcizené heslo prakticky znehodnotila.'
+                        postDesc: [
+                            "Krádež dat byla úspěšně dokončena v čistém textovém formátu.",
+                            "Operační systém i infrastruktura zůstaly technologicky nenarušeny.",
+                            "Získané údaje poskytují útočníkovi validní přístup do cílové sítě.",
+                            "Situace demonstruje kritickou nutnost zavádění vícefázového ověřování (2FA)."
+                        ],
+                        postBox: "Zobrazený výstup potvrzuje zisk přihlašovacích údajů bez asymetrického šifrování. Tento vektor útoku prokazuje, že i plně aktualizovaný a zabezpečený operační systém selhává, pakliže koncový uživatel odevzdá své autentizační klíče třetí straně. Zavedení hardwarových tokenů by odcizené heslo prakticky znehodnotilo."
                     }
                 ]
             }
@@ -423,20 +397,21 @@
             const btnRun = document.getElementById('btn-run');
             btnRun.className = `w-full py-4 bg-${currentAppScenario.color}-600 hover:bg-${currentAppScenario.color}-500 text-white font-bold rounded-lg transition text-lg flex justify-center items-center gap-2`;
 
-            loadStepState('pre'); // Načte výchozí PŘED texty
+            loadStepState('pre');
         }
 
         // Funkce: Aplikuje textovou sadu s animací
-        function applyDynamicText(descText, speakerText) {
+        function applyDynamicText(descArray, boxText) {
             // Odebrání třídy pro restart animace
             dynamicContentWrapper.classList.remove('fade-update');
-            
-            // Hack pro vynucení reflow (aby animace jela znovu)
             void dynamicContentWrapper.offsetWidth;
             
-            // Změna obsahu
-            document.getElementById('step-desc').innerHTML = descText;
-            document.getElementById('step-speaker').innerHTML = speakerText;
+            // Mapování pole do struktury HTML seznamu (odrážek)
+            const ulElement = document.getElementById('step-desc');
+            ulElement.innerHTML = descArray.map(item => `<li>${item}</li>`).join('');
+            
+            // Vložení textu do modrého analytického boxu
+            document.getElementById('step-box-text').innerHTML = boxText;
             
             // Přidání animační třídy
             dynamicContentWrapper.classList.add('fade-update');
@@ -450,7 +425,7 @@
                 document.getElementById('step-counter').textContent = `${currentStepIndex + 1} / ${currentAppScenario.steps.length}`;
                 document.getElementById('step-title').textContent = stepData.title;
                 
-                applyDynamicText(stepData.preDesc, stepData.preSpeaker);
+                applyDynamicText(stepData.preDesc, stepData.preBox);
                 
                 document.getElementById('btn-run').classList.remove('hidden');
                 document.getElementById('btn-next').classList.add('hidden');
@@ -459,7 +434,7 @@
                 termActiveLine.classList.remove('hidden');
                 termTyping.textContent = '';
             } else if (state === 'post') {
-                applyDynamicText(stepData.postDesc, stepData.postSpeaker);
+                applyDynamicText(stepData.postDesc, stepData.postBox);
                 
                 if (currentStepIndex < currentAppScenario.steps.length - 1) {
                     document.getElementById('btn-next').classList.remove('hidden');
@@ -506,7 +481,7 @@
 
             isSimulating = false;
             
-            // NAČTENÍ NOVÉHO TEXTU PO SKONČENÍ SIMULACE
+            // Načtení vyhodnocovacího textu (post)
             loadStepState('post');
         }
 

